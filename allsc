@@ -8,7 +8,7 @@ local creator = MarketplaceService:GetProductInfo(game.PlaceId).Creator.CreatorT
 local games = {
     [7381705] = {
         free = "https://raw.githubusercontent.com/thantzy/freeesce/refs/heads/main/SCFREE",
-        premium = "https://raw.githubusercontent.com/thantzy/premSC/refs/heads/main/SCprem",
+        premium = "https://raw.githubusercontent.com/ThanHub-GG/SCPREMIUM/refs/heads/main/TETSTSSSTS",
     }
 }
 
