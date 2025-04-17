@@ -9,7 +9,19 @@ local games = {
     [7381705] = {
         free = "https://raw.githubusercontent.com/ThanHub-GG/Testingthan/refs/heads/main/hahay",
         premium = "https://raw.githubusercontent.com/ThanHub-GG/SCPREMIUM/refs/heads/main/TETSTSSSTS",
-    }
+    }, -- Fisch
+	[3333298] = {
+        free = "https://raw.githubusercontent.com/ThanHub-GG/Bubble-Gum/refs/heads/main/loader",
+        premium = "https://raw.githubusercontent.com/ThanHub-GG/Bubble-Gum/refs/heads/main/loader",
+	}, -- BGSI
+	[12836673] = {
+        free = "https://raw.githubusercontent.com/thantzy/Blade-Ball/refs/heads/main/loader",
+        premium = "https://raw.githubusercontent.com/thantzy/Blade-Ball/refs/heads/main/loader",
+	}, -- BLADE BALL
+	[4372130] = {
+        free = "https://raw.githubusercontent.com/ThanHub-GG/ThanKaitunBF/refs/heads/main/loader",
+        premium = "https://raw.githubusercontent.com/ThanHub-GG/ThanKaitunBF/refs/heads/main/loader",
+	}
 }
 
 local function executeScript(script_key)
