@@ -23,8 +23,8 @@ local games = {
         premium = "https://raw.githubusercontent.com/ThanHub-GG/ThanKaitunBF/refs/heads/main/loader",
 	}, -- BF KAITUN
 	[35497641] = {
-	free = "".
-	premium = "http://raw.githubusercontent.com/ThanHub-GG/Beaks-Series/refs/heads/main/loader"
+	free = "",
+	premium = "http://raw.githubusercontent.com/ThanHub-GG/Beaks-Series/refs/heads/main/loader",
 	} -- BEAKS
 }
 
