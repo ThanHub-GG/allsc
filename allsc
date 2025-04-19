@@ -24,7 +24,7 @@ local games = {
 	}, -- BF KAITUN
 	[35497641] = {
 	free = "".
-	premium = "yyy"
+	premium = "http://raw.githubusercontent.com/ThanHub-GG/Beaks-Series/refs/heads/main/loader"
 	} -- BEAKS
 }
 
