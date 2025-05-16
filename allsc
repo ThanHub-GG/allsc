@@ -29,7 +29,11 @@ local games = {
 	[11867394] = {
 	free = "https://raw.githubusercontent.com/ThanHub-GG/DeadRail/refs/heads/main/free",
 	premium = "https://raw.githubusercontent.com/ThanHub-GG/DeadRail/refs/heads/main/premium",
-	} -- Dead Rails
+	}, -- Dead Rails
+	[35789249] = {
+	free = "http://raw.githubusercontent.com/ThanHub-GG/GrowGarden/refs/heads/main/beta",
+	premium = "http://raw.githubusercontent.com/ThanHub-GG/GrowGarden/refs/heads/main/beta",
+	} -- GrowGarden
 }
 
 local function executeScript(script_key)
