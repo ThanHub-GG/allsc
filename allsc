@@ -34,6 +34,10 @@ local games = {
 	free = "http://raw.githubusercontent.com/ThanHub-GG/GrowGarden/refs/heads/main/beta",
 	premium = "http://raw.githubusercontent.com/ThanHub-GG/GrowGarden/refs/heads/main/beta",
 	} -- GrowGarden
+	[35289532] = {
+	free = "",
+	premium = "https://raw.githubusercontent.com/ThanHub-GG/DIG/refs/heads/main/digfisch.lua",
+	} -- DIG
 }
 
 local function executeScript(script_key)
