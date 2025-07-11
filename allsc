@@ -10,14 +10,6 @@ local games = {
         free = "https://raw.githubusercontent.com/ThanHub-GG/Testingthan/refs/heads/main/hahay",
         premium = "https://raw.githubusercontent.com/ThanHub-GG/SCPREMIUM/refs/heads/main/TETSTSSSTS",
     }, -- Fisch
-	[3333298] = {
-        free = "https://raw.githubusercontent.com/ThanHub-GG/Bubble-Gum/refs/heads/main/loader",
-        premium = "https://raw.githubusercontent.com/ThanHub-GG/Bubble-Gum/refs/heads/main/loader",
-	}, -- BGSI
-	[12836673] = {
-        free = "https://raw.githubusercontent.com/thantzy/Blade-Ball/refs/heads/main/loader",
-        premium = "https://raw.githubusercontent.com/thantzy/Blade-Ball/refs/heads/main/loader",
-	}, -- BLADE BALL
 	[4372130] = {
         free = "https://raw.githubusercontent.com/ThanHub-GG/ThanKaitunBF/refs/heads/main/loader",
         premium = "https://raw.githubusercontent.com/ThanHub-GG/ThanKaitunBF/refs/heads/main/loader",
@@ -37,7 +29,11 @@ local games = {
 	[35289532] = {
 	free = "https://raw.githubusercontent.com/ThanHub-GG/DIG/refs/heads/main/digfree",
 	premium = "https://raw.githubusercontent.com/ThanHub-GG/DIG/refs/heads/main/digfisch.lua",
-	} -- DIG
+	}, -- DIG
+	[35815907] = {
+	free = "",
+	premium = "https://raw.githubusercontent.com/ThanHub-GG/SAB/refs/heads/main/brainprem.lua",
+	} -- SAB
 }
 
 local function executeScript(script_key)
