@@ -35,7 +35,7 @@ local games = {
 	premium = "http://raw.githubusercontent.com/ThanHub-GG/GrowGarden/refs/heads/main/beta",
 	}, -- GrowGarden
 	[35289532] = {
-	free = "",
+	free = "https://raw.githubusercontent.com/ThanHub-GG/DIG/refs/heads/main/digfisch.lua",
 	premium = "https://raw.githubusercontent.com/ThanHub-GG/DIG/refs/heads/main/digfisch.lua",
 	} -- DIG
 }
