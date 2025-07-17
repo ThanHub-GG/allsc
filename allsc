@@ -24,7 +24,7 @@ local games = {
 	}, -- Dead Rails
 	[35789249] = {
 	free = "http://raw.githubusercontent.com/ThanHub-GG/GrowGarden/refs/heads/main/beta",
-	premium = "http://raw.githubusercontent.com/ThanHub-GG/GrowGarden/refs/heads/main/beta",
+	premium = "http://raw.githubusercontent.com/ThanHub-GG/GrowGarden/refs/heads/main/prembeta",
 	}, -- GrowGarden
 	[35289532] = {
 	free = "https://raw.githubusercontent.com/ThanHub-GG/DIG/refs/heads/main/digfree",
