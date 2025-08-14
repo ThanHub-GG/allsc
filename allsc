@@ -39,7 +39,7 @@ local games = {
 	premium = "https://raw.githubusercontent.com/ThanHub-GG/99Forest/refs/heads/main/prem.lua",
 	}, -- 99 FOREST
 	[35102746] = {
-	free = "",
+	free = "https://raw.githubusercontent.com/ThanHub-GG/FishIt/refs/heads/main/allversion",
 	premium = "https://raw.githubusercontent.com/ThanHub-GG/FishIt/refs/heads/main/allversion",
 	}, -- FISH IT
 }
