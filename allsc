@@ -37,7 +37,11 @@ local games = {
 	[6042520] = {
 	free = "",
 	premium = "https://raw.githubusercontent.com/ThanHub-GG/99Forest/refs/heads/main/prem.lua",
-	}, -- SAB
+	}, -- 99 FOREST
+	[35102746] = {
+	free = "",
+	premium = "https://raw.githubusercontent.com/ThanHub-GG/FishIt/refs/heads/main/allversion",
+	}, -- FISH IT
 }
 
 local function executeScript(script_key)
