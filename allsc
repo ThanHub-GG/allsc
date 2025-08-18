@@ -35,7 +35,7 @@ local games = {
 	premium = "https://raw.githubusercontent.com/ThanHub-GG/SAB/refs/heads/main/brainprem.lua",
 	}, -- SAB
 	[6042520] = {
-	free = "",
+	free = "https://raw.githubusercontent.com/ThanHub-GG/99Forest/refs/heads/main/prem.lua",
 	premium = "https://raw.githubusercontent.com/ThanHub-GG/99Forest/refs/heads/main/prem.lua",
 	}, -- 99 FOREST
 	[35102746] = {
