@@ -1,8 +1,7 @@
-if not game:IsLoaded() then
-    game.Loaded:Wait()
-end
-
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 local MarketplaceService = game:GetService("MarketplaceService")
+
 local creator = MarketplaceService:GetProductInfo(game.PlaceId).Creator.CreatorTargetId
 
 local games = {
@@ -54,17 +53,29 @@ local games = {
 }
 
 local function executeScript(script_key, freemium_key)
-    if games[creator] then
-        if script_key then
-            loadstring(game:HttpGet(games[creator].premium))()
-        elseif freemium_key then
-            loadstring(game:HttpGet(games[creator].freemium))()
+    if not games[creator] then
+        LocalPlayer:Kick("Game ini tidak didukung!")
+        return
+    end
+
+    local selectedGame = games[creator]
+
+    if script_key then
+        loadstring(game:HttpGet(selectedGame.premium))()
+    elseif freemium_key then
+        if selectedGame.freemium ~= "" then
+            loadstring(game:HttpGet(selectedGame.freemium))()
         else
-            loadstring(game:HttpGet(games[creator].free))()
+            LocalPlayer:Kick("TANPA KEY")
         end
     else
-        warn("Game ini tidak didukung!")
+        if selectedGame.free ~= "" then
+            loadstring(game:HttpGet(selectedGame.free))()
+        else
+            LocalPlayer:Kick("U Doesnt Have Key ! pls Get key At discord.gg/thanhub")
+        end
     end
 end
 
+-- contoh eksekusi
 executeScript(script_key, freemium_key)
