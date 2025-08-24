@@ -9,38 +9,47 @@ local games = {
     [7381705] = {
         freemium = "https://raw.githubusercontent.com/ThanHub-GG/Testingthan/refs/heads/main/hahay",
         premium = "https://raw.githubusercontent.com/ThanHub-GG/SCPREMIUM/refs/heads/main/TETSTSSSTS",
+		free = "",
     }, -- Fisch
 	[4372130] = {
         free = "https://raw.githubusercontent.com/ThanHub-GG/ThanKaitunBF/refs/heads/main/loader",
         premium = "https://raw.githubusercontent.com/ThanHub-GG/ThanKaitunBF/refs/heads/main/loader",
+		freemium = "",
 	}, -- BF KAITUN
 	[35497641] = {
 	free = "https://raw.githubusercontent.com/ThanHub-GG/Beaks-Free/refs/heads/main/load",
 	premium = "http://raw.githubusercontent.com/ThanHub-GG/Beaks-Series/refs/heads/main/loader",
+	freemium = "",
 	}, -- BEAKS
 	[11867394] = {
 	free = "https://raw.githubusercontent.com/ThanHub-GG/DeadRail/refs/heads/main/free",
 	premium = "https://raw.githubusercontent.com/ThanHub-GG/DeadRail/refs/heads/main/premium",
+	freemium = "",
 	}, -- Dead Rails
 	[35789249] = {
 	freemium = "http://raw.githubusercontent.com/ThanHub-GG/GrowGarden/refs/heads/main/beta",
 	premium = "http://raw.githubusercontent.com/ThanHub-GG/GrowGarden/refs/heads/main/prembeta",
+	free = "",
 	}, -- GrowGarden
 	[35289532] = {
 	free = "https://raw.githubusercontent.com/ThanHub-GG/DIG/refs/heads/main/digfree",
 	premium = "https://raw.githubusercontent.com/ThanHub-GG/DIG/refs/heads/main/digfisch.lua",
+	freemium = "",
 	}, -- DIG
 	[35815907] = {
 	free = "",
 	premium = "https://raw.githubusercontent.com/ThanHub-GG/SAB/refs/heads/main/brainprem.lua",
+	freemium = "",
 	}, -- SAB
 	[6042520] = {
 	free = "https://raw.githubusercontent.com/ThanHub-GG/99Forest/refs/heads/main/prem.lua",
 	premium = "https://raw.githubusercontent.com/ThanHub-GG/99Forest/refs/heads/main/prem.lua",
+	freemium = "",
 	}, -- 99 FOREST
 	[35102746] = {
 	free = "https://raw.githubusercontent.com/ThanHub-GG/FishIt/refs/heads/main/allversion",
 	premium = "https://raw.githubusercontent.com/ThanHub-GG/FishIt/refs/heads/main/allversion",
+	freemium = "",
 	}, -- FISH IT
 }
 
@@ -60,4 +69,4 @@ local function executeScript(script_key, freemium_key)
     end
 end
 
-executeScript(script_key)
+executeScript(script_key, freemium_key)
