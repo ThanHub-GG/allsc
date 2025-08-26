@@ -11,7 +11,7 @@ local games = {
     }, -- Fisch
     [4372130] = {
         free = "https://raw.githubusercontent.com/ThanHub-GG/ThanKaitunBF/refs/heads/main/loader",
-        premium = "https://raw.githubusercontent.com/ThanHub-GG/ThanKaitunBF/refs/heads/main/loader",
+        premium = "https://raw.githubusercontent.com/ThanHub-GG/ThanKaitunBF/refs/heads/main/prem.lua",
     }, -- BF KAITUN
     [35497641] = {
         free = "https://raw.githubusercontent.com/ThanHub-GG/Beaks-Free/refs/heads/main/load",
