@@ -38,8 +38,8 @@ local games = {
         premium = "https://raw.githubusercontent.com/ThanHub-GG/99Forest/refs/heads/main/prem.lua",
     }, -- 99 FOREST
     [35102746] = {
-        free = "https://raw.githubusercontent.com/ThanHub-GG/FishIt/refs/heads/main/allversion",
-        premium = "https://raw.githubusercontent.com/ThanHub-GG/FishIt/refs/heads/main/allversion",
+        free = "https://raw.githubusercontent.com/ThanHub-GG/FishIt/refs/heads/main/free.lua",
+        premium = "https://raw.githubusercontent.com/ThanHub-GG/FishIt/refs/heads/main/prem.lua",
     }, -- FISH IT
     [36015593] = {
         free = "https://raw.githubusercontent.com/ThanHub-GG/HuntyZombie/refs/heads/main/free.lua",
