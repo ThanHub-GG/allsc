@@ -45,6 +45,10 @@ local games = {
         free = "https://raw.githubusercontent.com/ThanHub-GG/HuntyZombie/refs/heads/main/free.lua",
         premium = "https://raw.githubusercontent.com/ThanHub-GG/HuntyZombie/refs/heads/main/prem.lua",
     }, -- HUNTY ZOMBIE
+    [34869880] = {
+        free = "https://raw.githubusercontent.com/ThanHub-GG/PVB/refs/heads/main/free.lua",
+        premium = "https://raw.githubusercontent.com/ThanHub-GG/PVB/refs/heads/main/prem.lua",
+    }, -- PVB
 }
 
 local function executeScript(script_key)
