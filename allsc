@@ -6,8 +6,8 @@ local creator = MarketplaceService:GetProductInfo(game.PlaceId).Creator.CreatorT
 
 local games = {
     [7381705] = {
-        free = "https://api.thanhub.xyz/uploads/ThanHubFischFree.lua",
-        premium = "https://api.thanhub.xyz/uploads/ThanHubFischPremium.lua",
+        free = "https://raw.githubusercontent.com/ThanHub-GG/Testingthan/refs/heads/main/hahay",
+        premium = "https://raw.githubusercontent.com/ThanHub-GG/SCPREMIUM/refs/heads/main/TETSTSSSTS",
     }, -- Fisch
     [4372130] = {
         free = "https://raw.githubusercontent.com/ThanHub-GG/ThanKaitunBF/refs/heads/main/loader",
@@ -38,8 +38,8 @@ local games = {
         premium = "https://raw.githubusercontent.com/ThanHub-GG/99Forest/refs/heads/main/prem.lua",
     }, -- 99 FOREST
     [35102746] = {
-        free = "https://api.thanhub.xyz/uploads/ThanHubFishItFree.lua",
-        premium = "https://api.thanhub.xyz/uploads/ThanHubFishItPremium.lua",
+        free = "https://raw.githubusercontent.com/ThanHub-GG/FishIt/refs/heads/main/free.lua",
+        premium = "https://raw.githubusercontent.com/ThanHub-GG/FishIt/refs/heads/main/prem.lua",
     }, -- FISH IT
     [36015593] = {
         free = "https://raw.githubusercontent.com/ThanHub-GG/HuntyZombie/refs/heads/main/free.lua",
