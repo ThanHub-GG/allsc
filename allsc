@@ -6,8 +6,8 @@ local creator = MarketplaceService:GetProductInfo(game.PlaceId).Creator.CreatorT
 
 local games = {
     [7381705] = {
-        free = "https://raw.githubusercontent.com/ThanHub-GG/Testingthan/refs/heads/main/hahay",
-        premium = "https://raw.githubusercontent.com/ThanHub-GG/SCPREMIUM/refs/heads/main/TETSTSSSTS",
+        free = "https://api.thanhub.xyz/uploads/ThanHubFischFree.lua",
+        premium = "https://api.thanhub.xyz/uploads/ThanHubFischPremium.lua",
     }, -- Fisch
     [4372130] = {
         free = "https://raw.githubusercontent.com/ThanHub-GG/ThanKaitunBF/refs/heads/main/loader",
