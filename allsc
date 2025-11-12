@@ -49,6 +49,10 @@ local games = {
         free = "https://raw.githubusercontent.com/ThanHub-GG/PVB/refs/heads/main/free.lua",
         premium = "https://raw.githubusercontent.com/ThanHub-GG/PVB/refs/heads/main/prem.lua",
     }, -- PVB
+    [177892318] = {
+        free = "https://api.thanhub.xyz/uploads/ThanHubRaiseFree.lua",
+        premium = "https://api.thanhub.xyz/uploads/ThanHubRaisePremium.lua",
+    }, -- Raise Animals
 }
 
 local function executeScript(script_key)
