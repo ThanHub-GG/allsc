@@ -53,6 +53,10 @@ local games = {
         free = "https://api.thanhub.xyz/uploads/ThanHubRaiseFree.lua",
         premium = "https://api.thanhub.xyz/uploads/ThanHubRaisePremium.lua",
     }, -- Raise Animals
+    [35489258] = {
+        free = "",
+        premium = "https://api.thanhub.xyz/uploads/ThanHubForgePremium.lua",
+    }, -- FORGE
 }
 
 local function executeScript(script_key)
