@@ -6,7 +6,7 @@ local creator = MarketplaceService:GetProductInfo(game.PlaceId).Creator.CreatorT
 
 local games = {
     [7381705] = {
-        free = "https://api.luarmor.net/files/v4/loaders/e1f616d597f9d63c14cf649d711abac9.lua",
+        free = "https://api.luarmor.net/files/v4/loaders/e78c6c903a5e2e743a5bebfd88f864c4.lua",
         premium = "https://api.luarmor.net/files/v4/loaders/6a543b585b21918489b0b3d5fe53bdb4.lua",
     }, -- Fisch
     [6042520] = {
