@@ -59,20 +59,23 @@ local games = {
     -- }, -- SAB
 }
 
-local function executeScript(script_key)
+local IS_PREMIUM = getgenv().LUARMOR_IS_PREMIUM == true
+
+local function executeScript()
     if not games[creator] then
         LocalPlayer:Kick("Game ini tidak didukung!")
         return
     end
 
     local selectedGame = games[creator]
+    local url = IS_PREMIUM and selectedGame.premium or selectedGame.free
 
-    if script_key then
-        loadstring(game:HttpGet(selectedGame.premium))()
-    else
-        loadstring(game:HttpGet(selectedGame.free))()
+    if not url or url == "" then
+        LocalPlayer:Kick("Script belum tersedia.")
+        return
     end
+
+    loadstring(game:HttpGet(url))()
 end
 
--- contoh eksekusi
-executeScript(script_key)
+executeScript()
