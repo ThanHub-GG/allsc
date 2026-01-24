@@ -59,7 +59,10 @@ local games = {
     -- }, -- SAB
 }
 
-local IS_PREMIUM = getgenv().LUARMOR_IS_PREMIUM == true
+local IS_PREMIUM = false
+if typeof(LRM_IsUserPremium) == "boolean" then
+    IS_PREMIUM = LRM_IsUserPremium
+end
 
 local function executeScript()
     if not games[creator] then
