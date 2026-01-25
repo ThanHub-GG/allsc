@@ -6,41 +6,32 @@ local creator = MarketplaceService:GetProductInfo(game.PlaceId).Creator.CreatorT
 
 local games = {
     [7381705] = {
-        free = "https://api.luarmor.net/files/v4/loaders/e78c6c903a5e2e743a5bebfd88f864c4.lua",
         premium = "https://api.luarmor.net/files/v4/loaders/6a543b585b21918489b0b3d5fe53bdb4.lua",
     }, -- Fisch
     [6042520] = {
-        free = "https://raw.githubusercontent.com/ThanHub-GG/99Forest/refs/heads/main/free.lua",
         premium = "https://raw.githubusercontent.com/ThanHub-GG/99Forest/refs/heads/main/prem.lua",
     }, -- 99 FOREST
     [35102746] = {
-        free = "https://api.thanhub.xyz/uploads/ThanHubFishItFree.lua",
-        premium = "https://api.thanhub.xyz/uploads/ThanHubFishItPremium.lua",
+        premium = "https://api.luarmor.net/files/v4/loaders/7b1e582ad639f70e181b14087aeb6995.lua",
     }, -- FISH IT
-    [36015593] = {
-        free = "https://raw.githubusercontent.com/ThanHub-GG/HuntyZombie/refs/heads/main/free.lua",
-        premium = "https://raw.githubusercontent.com/ThanHub-GG/HuntyZombie/refs/heads/main/prem.lua",
-    }, -- HUNTY ZOMBIE
-    [34869880] = {
-        free = "https://raw.githubusercontent.com/ThanHub-GG/PVB/refs/heads/main/free.lua",
-        premium = "https://raw.githubusercontent.com/ThanHub-GG/PVB/refs/heads/main/prem.lua",
-    }, -- PVB
-    [177892318] = {
-        free = "https://api.thanhub.xyz/uploads/ThanHubRaiseFree.lua",
-        premium = "https://api.thanhub.xyz/uploads/ThanHubRaisePremium.lua",
-    }, -- Raise Animals
     [35489258] = {
-        free = "",
-        premium = "https://api.thanhub.xyz/uploads/ThanHubForgePremium.lua",
+        premium = "https://api.luarmor.net/files/v4/loaders/887166f553b6353c0b5443eab34d5358.lua",
     }, -- FORGE
-    [35789249] = {
-        free = "http://raw.githubusercontent.com/ThanHub-GG/GrowGarden/refs/heads/main/beta",
-        premium = "http://raw.githubusercontent.com/ThanHub-GG/GrowGarden/refs/heads/main/prembeta",
-    }, -- GrowGarden
-    [4372130] = {
-        free = "https://raw.githubusercontent.com/ThanHub-GG/ThanKaitunBF/refs/heads/main/loader",
-        premium = "https://raw.githubusercontent.com/ThanHub-GG/ThanKaitunBF/refs/heads/main/prem.lua",
-    }, -- BF KAITUN
+    -- [4372130] = {
+    --     premium = "https://api.luarmor.net/files/v4/loaders/887166f553b6353c0b5443eab34d5358.lua",
+    -- }, -- BF KAITUN
+    -- [36015593] = {
+    --     premium = "https://raw.githubusercontent.com/ThanHub-GG/HuntyZombie/refs/heads/main/prem.lua",
+    -- }, -- HUNTY ZOMBIE
+    -- [34869880] = {
+    --     premium = "https://raw.githubusercontent.com/ThanHub-GG/PVB/refs/heads/main/prem.lua",
+    -- }, -- PVB
+    -- [177892318] = {
+    --     premium = "https://api.thanhub.xyz/uploads/ThanHubRaisePremium.lua",
+    -- }, -- Raise Animals
+    -- [35789249] = {
+    --     premium = "http://raw.githubusercontent.com/ThanHub-GG/GrowGarden/refs/heads/main/prembeta",
+    -- }, -- GrowGarden
     -- [35497641] = {
     --     free = "https://raw.githubusercontent.com/ThanHub-GG/Beaks-Free/refs/heads/main/load",
     --     premium = "http://raw.githubusercontent.com/ThanHub-GG/Beaks-Series/refs/heads/main/loader",
@@ -59,26 +50,20 @@ local games = {
     -- }, -- SAB
 }
 
-local IS_PREMIUM = false
-if typeof(LRM_IsUserPremium) == "boolean" then
-    IS_PREMIUM = LRM_IsUserPremium
-end
-
-local function executeScript()
+local function executeScript(script_key)
     if not games[creator] then
         LocalPlayer:Kick("Game ini tidak didukung!")
         return
     end
 
     local selectedGame = games[creator]
-    local url = IS_PREMIUM and selectedGame.premium or selectedGame.free
 
-    if not url or url == "" then
-        LocalPlayer:Kick("Script belum tersedia.")
-        return
+    if script_key then
+        loadstring(game:HttpGet(selectedGame.premium))()
+    else
+        print("You need script_key")
     end
-
-    loadstring(game:HttpGet(url))()
 end
 
-executeScript()
+-- contoh eksekusi
+executeScript(script_key)
