@@ -15,7 +15,7 @@ local GAME_CONFIGS = {
         }
     },
     [7381705] = { -- creatorId
-        name = "Fisch"
+        name = "Fisch",
         script_ids = {
             normal = "e78c6c903a5e2e743a5bebfd88f864c4",
             premium = "6a543b585b21918489b0b3d5fe53bdb4",
