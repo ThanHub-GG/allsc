@@ -10,14 +10,14 @@ local GAME_CONFIGS = {
     [7671049560] = { -- gameid
         name = "The Forge",
         script_ids = {
-            normal = "fbfe7c35f21a354962c52cddb739a596"
+            normal = "fbfe7c35f21a354962c52cddb739a596",
             premium = "887166f553b6353c0b5443eab34d5358", 
         }
     },
     [7381705] = { -- creatorId
         name = "Fisch"
         script_ids = {
-            normal = "e78c6c903a5e2e743a5bebfd88f864c4"
+            normal = "e78c6c903a5e2e743a5bebfd88f864c4",
             premium = "6a543b585b21918489b0b3d5fe53bdb4",
         }
     },
@@ -30,7 +30,7 @@ local Config = {
     Title = "Than-Hub Key System",
     Description = "Welcome! Enter your key below.",
     GetKeyButtons = {
-        {Name = "Work.ink", Link = "https://ads.luarmor.net/get_key?for=ThanHub_Workink-UUxSglryLPaR", Icon = ""}
+        {Name = "Work.ink", Link = "https://ads.luarmor.net/get_key?for=ThanHub_Workink-UUxSglryLPaR", Icon = ""},
         {Name = "Discord Link", Link = "https://discord.gg/cjqFSvX27J", Icon = ""},
         {Name = "Linkvertise", Link = "https://ads.luarmor.net/get_key?for=ThanHub_Linkvertise-nlOCoAciNNee", Icon = ""},
     }
