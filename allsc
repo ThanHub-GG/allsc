@@ -21,6 +21,13 @@ local GAME_CONFIGS = {
             premium = "6a543b585b21918489b0b3d5fe53bdb4",
         }
     },
+    [127794225497302] = {
+        name = "Abyss",
+        script_ids = {
+            normal = "66824041e2de25812d183a697aaee94a",
+            premium = "21e65bf369e1116983a155e2a8e97377",
+        }
+    },
 }
 
 -- Config UI
