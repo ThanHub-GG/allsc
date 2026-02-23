@@ -28,6 +28,13 @@ local GAME_CONFIGS = {
             premium = "21e65bf369e1116983a155e2a8e97377",
         }
     },
+    [130594398886540] = {
+        name = "Garden Horizon",
+        script_ids = {
+            normal = "e929d2be8e20bec563378b547e8a4d8c",
+            premium = "a98b427174d97e3aff94c1ee79261693",
+        }
+    },
 }
 
 -- Config UI
