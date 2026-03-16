@@ -35,6 +35,13 @@ local GAME_CONFIGS = {
             premium = "a98b427174d97e3aff94c1ee79261693",
         }
     },
+    [77747658251236] = {
+        name = "Sailor Piece",
+        script_ids = {
+            normal = "048c9243553b97798c3c11092aacd314",
+            premium = "048c9243553b97798c3c11092aacd314",
+        }
+    },
 }
 
 -- Config UI
