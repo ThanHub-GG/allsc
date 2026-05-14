@@ -1,10 +1,10 @@
 local GAME_CONFIGS = {
-    --Fish It
-    [121864768012064] = { -- placeid
-        name = "Fish It",
+    --Kuck Lucky Block
+    [89469502395769] = { -- placeid
+        name = "Kick A Lucky Block",
         script_ids = {
-            normal = "b8028e5b4e26e741997b55c57bfd0445",
-            premium = "7b1e582ad639f70e181b14087aeb6995",
+            normal = "f88ef59fdbd55572bc69c554152e0b09",
+            premium = "73c19126d19a510c110f195c0c035f9c",
         }
     },
     [7671049560] = { -- gameid
