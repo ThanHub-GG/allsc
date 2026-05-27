@@ -120,40 +120,36 @@ end
 end
 
 local function checkKey(key)
-    local function tryVersion(ver)
+    local versions = {"premium", "normal"}
+
+    for _, ver in ipairs(versions) do
         local scriptId = gameConfig.script_ids[ver]
-        if not scriptId then
-            return false
+
+        if scriptId then
+            local ok, status = pcall(function()
+warn("USING SCRIPT ID:", api.script_id)
+warn("USING KEY:", currentKey)
+warn("VERSION:", version)
+                api.script_id = tostring(scriptId)
+
+                task.wait()
+
+                return api.check_key(tostring(key))
+            end)
+
+            warn("CHECKING:", ver, scriptId)
+
+            if ok and status then
+                warn("RESULT:", status.code)
+
+                if status.code == "KEY_VALID" then
+                    return true, status, ver
+                end
+            end
         end
-
-        api.script_id = scriptId
-
-        local ok, status = pcall(function()
-            return api.check_key(key)
-        end)
-
-        if not ok or not status then
-            return false
-        end
-
-        if status.code == "KEY_VALID" then
-            return true, status
-        end
-
-        return false, status
     end
 
-    local valid, status = tryVersion("premium")
-    if valid then
-        return true, status, "premium"
-    end
-
-    valid, status = tryVersion("normal")
-    if valid then
-        return true, status, "normal"
-    end
-
-    return false, status or {code = "REQUEST_FAILED"}, nil
+    return false, {code = "KEY_INVALID"}, nil
 end
 
 local keyFileName = "ThanHubSaveKey.txt" -- valid key name
