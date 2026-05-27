@@ -1,15 +1,13 @@
 local GAME_CONFIGS = {
-    -- Kick A Lucky Block (GAME ID)
-    [89469502395769] = {
+    --Kuck Lucky Block
+    [89469502395769] = { -- placeid
         name = "Kick A Lucky Block",
         script_ids = {
             normal = "fc453933-23bb-4df7-871c-6a56022575f2",
             premium = "aaedaedb-055f-4313-8c85-0907ab58497a",
         }
     },
-
-    -- Fisch (CREATOR ID)
-    [7381705] = {
+    [7381705] = { -- creatorId
         name = "Fisch",
         script_ids = {
             normal = "375ff036-106e-4e6a-94db-1ef838b4ec0d",
@@ -31,20 +29,9 @@ local Config = {
 
 local currentPlaceId = game.PlaceId
 local MarketplaceService = game:GetService("MarketplaceService")
-local creatorId = nil
-pcall(function()
-    creatorId = MarketplaceService:GetProductInfo(game.PlaceId).Creator.CreatorTargetId
-end)
-local currentGameId = tonumber(game.GameId)
-
-warn("PlaceId:", currentPlaceId)
-warn("GameId:", currentGameId)
-warn("CreatorId:", creatorId)
-
-local gameConfig =
-    GAME_CONFIGS[currentGameId]
-    or GAME_CONFIGS[currentPlaceId]
-    or GAME_CONFIGS[creatorId]
+local creatorId = MarketplaceService:GetProductInfo(game.PlaceId).Creator.CreatorTargetId
+local currentGameId = game.GameId
+local gameConfig = GAME_CONFIGS[currentGameId] or GAME_CONFIGS[currentPlaceId] or GAME_CONFIGS[creatorId]
 
 if not gameConfig then
     game:GetService("StarterGui"):SetCore("SendNotification", {
@@ -62,19 +49,20 @@ local success, api = pcall(function()
 end)
 
 if not success then
-    warn("Failed to load Lua Aegis library:", api)
+    warn("Failed to load Luarmor library:", api)
     return
 end
 
 local function detectVersion()
-    local version = tostring(
-        getgenv().HoN_Version
-        or rawget(_G, "Version")
-        or _G.Version
-        or "normal"
-    ):lower()
+    local version = LGS_ScriptVersion or rawget(_G, "Version") or _G.Version or "normal"
 
-    if version ~= "premium" and version ~= "normal" then
+    if type(version) ~= "string" then
+        version = rawget(_G, "Version") or _G.Version or "normal"
+    end
+
+    version = tostring(version):lower()
+
+    if version ~= "premium" and version ~= "lite" then
         version = "normal"
     end
 
@@ -83,8 +71,8 @@ local function detectVersion()
     return version
 end
 
-local function loadScript(skipCheck)
-    local version = getgenv().HoN_Version or detectVersion()
+local function loadScript()
+    local version = LGS_ScriptVersion or detectVersion()
     local scriptId = gameConfig.script_ids[version]
 
     if not scriptId then
@@ -92,28 +80,14 @@ local function loadScript(skipCheck)
         return false, "Invalid version"
     end
 
+    warn("LOADING VERSION:", version:upper())
+
     api.script_id = scriptId
 
     local currentKey = getgenv().script_key or _G.script_key
-
     if currentKey then
-        script_key = currentKey
-        _G.script_key = currentKey
-        getgenv().script_key = currentKey
-    end
-
-if not currentKey or currentKey == "" then
-    warn("No script key found")
-    return false, "NO_KEY"
-end
-
-    if not skipCheck then
-        local status = api.check_key(currentKey)
-
-        if status.code ~= "KEY_VALID" then
-            warn("[Lua Aegis] Key invalid:", status.code)
-            return false, status.code
-        end
+        pcall(function() script_key = currentKey end)
+        pcall(function() _G.script_key = currentKey end)
     end
 
     local ok, err = pcall(function()
@@ -132,51 +106,25 @@ end
 local function checkKey(key)
     local function tryVersion(ver)
         local scriptId = gameConfig.script_ids[ver]
-
-        if not scriptId then
-            return false, {code = "SCRIPT_ID_INVALID"}
-        end
-
+        if not scriptId then return false end
         api.script_id = scriptId
-
-        warn("Checking Version:", ver)
-        warn("Using Script ID:", scriptId)
-
-        local ok, status = pcall(function()
+        local ok, result = pcall(function()
             return api.check_key(key)
         end)
-
-        if not ok or not status then
-            warn("API CHECK FAILED:", status)
-            return false, {code = "REQUEST_FAILED"}
-        end
-
-        warn("API RESPONSE:", status.code)
-
-        if status.code == "KEY_VALID" then
-            return true, status
-        end
-
-        return false, status
+        return ok and result and result.code == "KEY_VALID"
     end
 
-    local valid, status = tryVersion("premium")
-
-    if valid then
-        return true, status, "premium"
+    if tryVersion("premium") then
+        return true, nil, "premium"
+    elseif tryVersion("normal") then
+        return true, nil, "normal"
     end
 
-    valid, status = tryVersion("normal")
-
-    if valid then
-        return true, status, "normal"
-    end
-
-    return false, status or {code = "KEY_INCORRECT"}, nil
+    return false, {code = "KEY_INCORRECT"}, nil
 end
 
-local keyFileName = "ThanHubSaveKey.txt" -- valid key name
-local oldKeyFileName = "ThanHubKeySave" .. currentPlaceId .. ".txt" -- func ga kepake blm dihapus
+local keyFileName = "adsfjkbdsbkafbjksdf.txt" -- valid key name
+local oldKeyFileName = "asdfiubdsbjkfjkbldsf" .. currentPlaceId .. ".txt" -- func ga kepake blm dihapus
 
 local function checkSavedKey()
     local savedKey = nil
@@ -238,7 +186,7 @@ local function checkSavedKey()
             pcall(function() script_key = savedKey end)
             pcall(function() _G.script_key = savedKey end)
             pcall(function() getgenv().script_key = savedKey end)
-            getgenv().HoN_Version = version
+            LGS_ScriptVersion = version
 
             if isfile and writefile then
                 pcall(function()
@@ -255,7 +203,7 @@ local function checkSavedKey()
                 Duration = 3;
             })
 
-            loadScript(true)
+            loadScript()
             return true
         else
             if isfile and delfile then
@@ -281,10 +229,10 @@ elseif _G.script_key and not getgenv().script_key then
     getgenv().script_key = _G.script_key
 end
 
-if rawget(_G, "Version") and type(rawget(_G, "Version")) == "string" and not getgenv().HoN_Version then
-    getgenv().HoN_Version = rawget(_G, "Version")
-elseif _G.Version and type(_G.Version) == "string" and not getgenv().HoN_Version then
-    getgenv().HoN_Version = _G.Version
+if rawget(_G, "Version") and type(rawget(_G, "Version")) == "string" and not LGS_ScriptVersion then
+    LGS_ScriptVersion = rawget(_G, "Version")
+elseif _G.Version and type(_G.Version) == "string" and not LGS_ScriptVersion then
+    LGS_ScriptVersion = _G.Version
 end
 
 warn("Final _G.Version:", _G.Version or "nil")
@@ -712,22 +660,14 @@ local function ButtonHover(btn, defaultTrans, hoverTrans)
     end
 end
 
-local isVerifying = false
-
-local function sanitizeKey(text)
-    return tostring(text or ""):gsub("^%s*(.-)%s*$", "%1")
-end
+local isVerifying = false -- debounce
 
 local function VerifyKey()
     if isVerifying then
         return
     end
 
-    local key = sanitizeKey(KeyInput.Text)
-
-    warn("INPUT KEY:", key)
-    warn("KEY LENGTH:", #key)
-
+    local key = KeyInput.Text:gsub("%s+", "")
     if key == "" then
         UpdateStatus("Please enter a key!", Color3.fromRGB(255, 100, 100))
         task.wait(2)
@@ -736,93 +676,56 @@ local function VerifyKey()
     end
 
     isVerifying = true
-
     UpdateStatus("Checking key...", Color3.fromRGB(255, 200, 100))
     SubmitBtnText.Text = "Checking..."
 
     task.spawn(function()
-
         local valid, result, detectedVersion = checkKey(key)
 
-        warn("VALID:", valid)
-        warn("RESULT:", result and result.code)
-        warn("VERSION:", detectedVersion)
-
         if valid then
-
             local version = detectedVersion or "normal"
-
-            UpdateStatus(
-                "Key valid! Loading " .. version:upper() .. "...",
-                Color3.fromRGB(100, 255, 100)
-            )
+            UpdateStatus("Key valid! Loading " .. version:upper() .. "...", Color3.fromRGB(100, 255, 100))
 
             getgenv().script_key = key
-            getgenv().HoN_Version = version
+            LGS_ScriptVersion = version
 
+            -- Save key ke file
             if writefile then
                 pcall(function()
                     writefile(keyFileName, key)
                 end)
             end
 
-            local versionText =
-                version == "premium"
-                and "PREMIUM"
-                or "NORMAL"
+            local versionText = version == "premium" and "PREMIUM" or "NORMAL"
 
             game:GetService("StarterGui"):SetCore("SendNotification", {
-                Title = Config.Title,
-                Text = gameConfig.name .. " | " .. versionText .. " loaded!",
-                Icon = "rbxassetid://85779221265543",
-                Duration = 5
+                Title = Config.Title;
+                Text = gameConfig.name .. " | " .. versionText .. " loaded!";
+                Icon = "rbxassetid://85779221265543";
+                Duration = 5;
             })
 
-            isVerifying = false
-
             KeySystemUI:Destroy()
-
-            loadScript(true)
-
+            loadScript()
         else
-
             local statusMessages = {
                 KEY_HWID_LOCKED = "Key locked to different device",
                 KEY_INCORRECT = "Invalid key",
                 KEY_EXPIRED = "Key expired",
                 KEY_BANNED = "Key banned",
                 KEY_INVALID = "Invalid key format",
-                INVALID_KEY_FORMAT = "Invalid key format",
                 SCRIPT_ID_INCORRECT = "Script ID error",
                 SCRIPT_ID_INVALID = "Invalid script ID",
                 INVALID_EXECUTOR = "Unsupported executor",
-                INVALID_VERSION = "Version not supported",
-                REQUEST_FAILED = "Failed connect to auth server"
+                INVALID_VERSION = "Version not supported"
             }
 
-            local errorCode =
-                result
-                and result.code
-                or "UNKNOWN_ERROR"
-
-            warn("FINAL ERROR:", errorCode)
-
-            local msg =
-                statusMessages[errorCode]
-                or ("Error: " .. tostring(errorCode))
-
+            local msg = statusMessages[result.code] or ("Error: " .. tostring(result.message))
             UpdateStatus(msg, Color3.fromRGB(255, 100, 100))
-
             SubmitBtnText.Text = "Verify Key"
-
-            isVerifying = false
-
+            isVerifying = false -- Reset flag
             task.wait(2)
-
-            UpdateStatus(
-                Config.Description,
-                Color3.fromRGB(255, 255, 255)
-            )
+            UpdateStatus(Config.Description, Color3.fromRGB(255, 255, 255))
         end
     end)
 end
