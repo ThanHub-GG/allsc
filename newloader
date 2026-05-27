@@ -1,13 +1,15 @@
 local GAME_CONFIGS = {
-    --Kuck Lucky Block
-    [89469502395769] = { -- placeid
+    -- Kick A Lucky Block (GAME ID)
+    [89469502395769] = {
         name = "Kick A Lucky Block",
         script_ids = {
             normal = "fc453933-23bb-4df7-871c-6a56022575f2",
             premium = "aaedaedb-055f-4313-8c85-0907ab58497a",
         }
     },
-    [7381705] = { -- creatorId
+
+    -- Fisch (CREATOR ID)
+    [7381705] = {
         name = "Fisch",
         script_ids = {
             normal = "375ff036-106e-4e6a-94db-1ef838b4ec0d",
@@ -33,8 +35,16 @@ local creatorId = nil
 pcall(function()
     creatorId = MarketplaceService:GetProductInfo(game.PlaceId).Creator.CreatorTargetId
 end)
-local currentGameId = game.GameId
-local gameConfig = GAME_CONFIGS[currentGameId] or GAME_CONFIGS[currentPlaceId] or GAME_CONFIGS[creatorId]
+local currentGameId = tonumber(game.GameId)
+
+warn("PlaceId:", currentPlaceId)
+warn("GameId:", currentGameId)
+warn("CreatorId:", creatorId)
+
+local gameConfig =
+    GAME_CONFIGS[currentGameId]
+    or GAME_CONFIGS[currentPlaceId]
+    or GAME_CONFIGS[creatorId]
 
 if not gameConfig then
     game:GetService("StarterGui"):SetCore("SendNotification", {
@@ -120,36 +130,49 @@ end
 end
 
 local function checkKey(key)
-    local versions = {"premium", "normal"}
-
-    for _, ver in ipairs(versions) do
+    local function tryVersion(ver)
         local scriptId = gameConfig.script_ids[ver]
 
-        if scriptId then
-            local ok, status = pcall(function()
-warn("USING SCRIPT ID:", api.script_id)
-warn("USING KEY:", currentKey)
-warn("VERSION:", version)
-                api.script_id = tostring(scriptId)
-
-                task.wait()
-
-                return api.check_key(tostring(key))
-            end)
-
-            warn("CHECKING:", ver, scriptId)
-
-            if ok and status then
-                warn("RESULT:", status.code)
-
-                if status.code == "KEY_VALID" then
-                    return true, status, ver
-                end
-            end
+        if not scriptId then
+            return false, {code = "SCRIPT_ID_INVALID"}
         end
+
+        api.script_id = scriptId
+
+        warn("Checking Version:", ver)
+        warn("Using Script ID:", scriptId)
+
+        local ok, status = pcall(function()
+            return api.check_key(key)
+        end)
+
+        if not ok or not status then
+            warn("API CHECK FAILED:", status)
+            return false, {code = "REQUEST_FAILED"}
+        end
+
+        warn("API RESPONSE:", status.code)
+
+        if status.code == "KEY_VALID" then
+            return true, status
+        end
+
+        return false, status
     end
 
-    return false, {code = "KEY_INVALID"}, nil
+    local valid, status = tryVersion("premium")
+
+    if valid then
+        return true, status, "premium"
+    end
+
+    valid, status = tryVersion("normal")
+
+    if valid then
+        return true, status, "normal"
+    end
+
+    return false, status or {code = "KEY_INCORRECT"}, nil
 end
 
 local keyFileName = "ThanHubSaveKey.txt" -- valid key name
