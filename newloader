@@ -712,14 +712,22 @@ local function ButtonHover(btn, defaultTrans, hoverTrans)
     end
 end
 
-local isVerifying = false -- debounce
+local isVerifying = false
+
+local function sanitizeKey(text)
+    return tostring(text or ""):gsub("^%s*(.-)%s*$", "%1")
+end
 
 local function VerifyKey()
     if isVerifying then
         return
     end
 
-    local key = KeyInput.Text:gsub("%s+", "")
+    local key = sanitizeKey(KeyInput.Text)
+
+    warn("INPUT KEY:", key)
+    warn("KEY LENGTH:", #key)
+
     if key == "" then
         UpdateStatus("Please enter a key!", Color3.fromRGB(255, 100, 100))
         task.wait(2)
@@ -728,45 +736,63 @@ local function VerifyKey()
     end
 
     isVerifying = true
+
     UpdateStatus("Checking key...", Color3.fromRGB(255, 200, 100))
     SubmitBtnText.Text = "Checking..."
 
     task.spawn(function()
+
         local valid, result, detectedVersion = checkKey(key)
 
+        warn("VALID:", valid)
+        warn("RESULT:", result and result.code)
+        warn("VERSION:", detectedVersion)
+
         if valid then
+
             local version = detectedVersion or "normal"
-            UpdateStatus("Key valid! Loading " .. version:upper() .. "...", Color3.fromRGB(100, 255, 100))
+
+            UpdateStatus(
+                "Key valid! Loading " .. version:upper() .. "...",
+                Color3.fromRGB(100, 255, 100)
+            )
 
             getgenv().script_key = key
             getgenv().HoN_Version = version
 
-            -- Save key ke file
             if writefile then
                 pcall(function()
                     writefile(keyFileName, key)
                 end)
             end
 
-            local versionText = version == "premium" and "PREMIUM" or "NORMAL"
+            local versionText =
+                version == "premium"
+                and "PREMIUM"
+                or "NORMAL"
 
             game:GetService("StarterGui"):SetCore("SendNotification", {
-                Title = Config.Title;
-                Text = gameConfig.name .. " | " .. versionText .. " loaded!";
-                Icon = "rbxassetid://85779221265543";
-                Duration = 5;
+                Title = Config.Title,
+                Text = gameConfig.name .. " | " .. versionText .. " loaded!",
+                Icon = "rbxassetid://85779221265543",
+                Duration = 5
             })
 
             isVerifying = false
+
             KeySystemUI:Destroy()
+
             loadScript(true)
+
         else
+
             local statusMessages = {
                 KEY_HWID_LOCKED = "Key locked to different device",
                 KEY_INCORRECT = "Invalid key",
                 KEY_EXPIRED = "Key expired",
                 KEY_BANNED = "Key banned",
                 KEY_INVALID = "Invalid key format",
+                INVALID_KEY_FORMAT = "Invalid key format",
                 SCRIPT_ID_INCORRECT = "Script ID error",
                 SCRIPT_ID_INVALID = "Invalid script ID",
                 INVALID_EXECUTOR = "Unsupported executor",
@@ -774,12 +800,29 @@ local function VerifyKey()
                 REQUEST_FAILED = "Failed connect to auth server"
             }
 
-            local msg = statusMessages[result.code] or ("Error: " .. tostring(result.message))
+            local errorCode =
+                result
+                and result.code
+                or "UNKNOWN_ERROR"
+
+            warn("FINAL ERROR:", errorCode)
+
+            local msg =
+                statusMessages[errorCode]
+                or ("Error: " .. tostring(errorCode))
+
             UpdateStatus(msg, Color3.fromRGB(255, 100, 100))
+
             SubmitBtnText.Text = "Verify Key"
-            isVerifying = false -- Reset flag
+
+            isVerifying = false
+
             task.wait(2)
-            UpdateStatus(Config.Description, Color3.fromRGB(255, 255, 255))
+
+            UpdateStatus(
+                Config.Description,
+                Color3.fromRGB(255, 255, 255)
+            )
         end
     end)
 end
