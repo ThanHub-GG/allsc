@@ -42,6 +42,13 @@ local GAME_CONFIGS = {
             premium = "048c9243553b97798c3c11092aacd314",
         }
     },
+    [97598239454123] = {
+        name = "Grow Garden 2",
+        script_ids = {
+            normal = "8c580c8dfc20fd271ac79612bb0d5446",
+            premium = "ac97451d85295e0cf3769fac51ab8cf4",
+        }
+    },
 }
 
 -- Config UI
