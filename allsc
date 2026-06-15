@@ -42,7 +42,7 @@ local GAME_CONFIGS = {
             premium = "048c9243553b97798c3c11092aacd314",
         }
     },
-    [97598239454123] = {
+    [432538536] = {
         name = "Grow Garden 2",
         script_ids = {
             normal = "8c580c8dfc20fd271ac79612bb0d5446",
