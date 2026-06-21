@@ -76,27 +76,22 @@ local function loadScript(version)
 end
 
 local function checkKeyDirect(key, version)
-    if not key or key == "" then return false, {code = "KEY_INCORRECT", message = "Empty key"} end
-    
+    if not key or key == "" then return false, {code="KEY_INCORRECT"} end
     local scriptId = gameConfig.script_ids[version]
-    if not scriptId then return false, {code = "INVALID_VERSION", message = "No script ID"} end
-    
-    api.script_id = scriptId
-    
-    local ok, result = pcall(function()
-        api.check_key(key)
-    end)
+    if not scriptId then return false, {code="INVALID_VERSION"} end
 
-    if ok then
-        return true, "KEY_VALID"
-    else
-        local errMsg = tostring(result or "KEY_INCORRECT"):upper()
-        local finalCode = "KEY_INCORRECT"
-        if string.find(errMsg, "HWID") then finalCode = "KEY_HWID_LOCKED"
-        elseif string.find(errMsg, "EXPIRE") then finalCode = "KEY_EXPIRED"
-        elseif string.find(errMsg, "BAN") then finalCode = "KEY_BANNED" end
-        return false, {code = finalCode, message = result}
+    api.script_id = scriptId
+
+    local ok, status = pcall(function()
+        return api.check_key(key)   -- tangkep return-nya
+    end)
+    if not ok or type(status) ~= "table" then
+        return false, {code="REQUEST_FAILED"}
     end
+    if status.code == "KEY_VALID" then
+        return true, "KEY_VALID"
+    end
+    return false, {code = status.code or "KEY_INCORRECT", message = status.message}
 end
 
 local keyFileName = "thananjay1_key.txt"
