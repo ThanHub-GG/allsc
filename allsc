@@ -348,14 +348,32 @@ Divider1.BackgroundTransparency = 0.9
 Divider1.Size = UDim2.new(1, 0, 0, 1)
 Divider1.Parent = Content
 
+-- 1. Membuat Tombol Utama
 local DiscordBtn = Instance.new("TextButton")
-DiscordBtn.Text = "Need support? Join our Discord ( Click Here )"
-DiscordBtn.FontFace = Font.new("rbxassetid://12187365364")
-DiscordBtn.TextColor3 = Color3.fromRGB(168, 85, 247)
-DiscordBtn.TextSize = 12
-DiscordBtn.BackgroundTransparency = 1
-DiscordBtn.Size = UDim2.new(1, 0, 0, 20)
+DiscordBtn.Name = "DiscordBtn"
+DiscordBtn.Text = "Get Your Key Here ( Click )"
+DiscordBtn.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold) -- Dibuat agak tebal biar terbaca
+DiscordBtn.TextColor3 = Color3.fromRGB(168, 85, 247) -- Warna ungu neon khas ThanHub
+DiscordBtn.TextSize = 13
+DiscordBtn.Size = UDim2.new(1, 0, 0, 28) -- Ditambah tingginya sedikit dari 20 ke 28 biar tidak terlalu gepeng
 DiscordBtn.Parent = Content
+
+-- 2. Mengatur Background yang Elegan (Gelap Transparan)
+DiscordBtn.BackgroundColor3 = Color3.fromRGB(24, 18, 36) -- Warna ungu gelap pekat (Dark Mode UI)
+DiscordBtn.BackgroundTransparency = 0.2 -- Sedikit transparan agar menyatu dengan background UI utama
+
+-- 3. Membuat Sudut Tombol Melengkung (Smooth Corner)
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 6) -- Membuat sudut melengkung halus sebesar 6 pixel
+btnCorner.Parent = DiscordBtn
+
+-- 4. Membuat Garis Tepi Neon (Glow Outline)
+local btnStroke = Instance.new("UIStroke")
+btnStroke.Color = Color3.fromRGB(168, 85, 247) -- Menyamakan warna stroke dengan warna teks ungu neon
+btnStroke.Thickness = 1 -- Ketebalan garis tepi
+btnStroke.Transparency = 0.4 -- Dibuat agak samar agar terlihat seperti efek pendaran cahaya (glow)
+btnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+btnStroke.Parent = DiscordBtn
 
 local isVerifying = false
 local function VerifyKey()
