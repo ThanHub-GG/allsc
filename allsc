@@ -437,7 +437,7 @@ local function VerifyKey()
             getgenv().HoN_Version = nil
             pcall(function() _G.script_key = nil end)
             
-            if isfile then
+            if isfile and delfile then
                 pcall(function()
                     if isfile(keyFileName) then delfile(keyFileName) end
                     if isfile(versionFileName) then delfile(versionFileName) end
@@ -446,9 +446,9 @@ local function VerifyKey()
 
             local statusMessages = {
                 KEY_HWID_LOCKED = "Key locked to another HWID",
-                KEY_INCORRECT = "Invalid key for " .. targetVersion:upper() .. " version",
-                KEY_EXPIRED = "Key expired",
-                KEY_BANNED = "Key banned"
+                KEY_INCORRECT   = "Invalid key for " .. targetVersion:upper() .. " version",
+                KEY_EXPIRED     = "Key expired, please get a new key",  -- lebih jelas
+                KEY_BANNED      = "Key banned"
             }
             
             Description.Text = statusMessages[result.code] or "Verification failed"
