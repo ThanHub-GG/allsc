@@ -20,7 +20,7 @@ local GAME_CONFIGS = {
             premium = "7c40dc11-8b97-4143-a862-46758f0b2c3f",
         }
     },
-    [79546208627805] = {
+    [6042520] = {
         name = "99 Night In The Forest",
         script_ids = {
             normal = "44bda6dc-c06d-40c0-8395-26be3d2bd3d2",
