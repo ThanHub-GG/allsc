@@ -406,13 +406,13 @@ local function VerifyKey()
         if valid then
             Description.Text = "Key valid! Launching script..."
             Description.TextColor3 = Color3.fromRGB(100, 255, 150)
-
+        
             getgenv().script_key = key
             getgenv().HoN_Version = targetVersion
             pcall(function() _G.script_key = key end)
-
+        
             local isScriptLoaded = loadScript(targetVersion)
-
+        
             if isScriptLoaded then
                 if writefile then
                     pcall(function() 
@@ -426,7 +426,7 @@ local function VerifyKey()
                 getgenv().script_key = nil
                 getgenv().HoN_Version = nil
                 pcall(function() _G.script_key = nil end)
-
+        
                 Description.Text = "Failed to load script game! Try again."
                 Description.TextColor3 = Color3.fromRGB(255, 100, 100)
                 SubmitBtnText.Text = "Verify Key"
@@ -437,17 +437,20 @@ local function VerifyKey()
             getgenv().HoN_Version = nil
             pcall(function() _G.script_key = nil end)
             
-            if isfile and delfile then
-                pcall(function()
-                    if isfile(keyFileName) then delfile(keyFileName) end
-                    if isfile(versionFileName) then delfile(versionFileName) end
-                end)
+            -- HAPUS FILE HANYA UNTUK EXPIRED DAN INCORRECT
+            if (result.code == "KEY_EXPIRED" or result.code == "KEY_INCORRECT") then
+                if isfile and delfile then
+                    pcall(function()
+                        if isfile(keyFileName) then delfile(keyFileName) end
+                        if isfile(versionFileName) then delfile(versionFileName) end
+                    end)
+                end
             end
-
+        
             local statusMessages = {
                 KEY_HWID_LOCKED = "Key locked to another HWID",
                 KEY_INCORRECT   = "Invalid key for " .. targetVersion:upper() .. " version",
-                KEY_EXPIRED     = "Key expired, please get a new key",  -- lebih jelas
+                KEY_EXPIRED     = "Key expired, please get a new key",
                 KEY_BANNED      = "Key banned"
             }
             
