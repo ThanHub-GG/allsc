@@ -394,75 +394,102 @@ local function VerifyKey()
     end
 
     isVerifying = true
-    local targetVersion = selectedVersionUI -- Ambil versi dari TAB UI
+    local targetVersion = selectedVersionUI
     Description.Text = "Checking " .. targetVersion:upper() .. " key..."
     Description.TextColor3 = Color3.fromRGB(255, 200, 100)
     SubmitBtnText.Text = "Verifying..."
 
     task.spawn(function()
-        -- 1. Cek validitas key ke server Aegis dulu
-        local valid, result = checkKeyDirect(key, targetVersion)
+        api.script_id = gameConfig.script_ids[targetVersion]
 
-        if valid then
-            Description.Text = "Key valid! Launching script..."
-            Description.TextColor3 = Color3.fromRGB(100, 255, 150)
-        
-            getgenv().script_key = key
-            getgenv().HoN_Version = targetVersion
-            pcall(function() _G.script_key = key end)
-        
-            local isScriptLoaded = loadScript(targetVersion)
-        
-            if isScriptLoaded then
+        local ok, status = pcall(function()
+            return api.check_key(key)
+        end)
+
+        if ok and status then
+            if status.code == "KEY_VALID" then
+                local hours_left
+                if status.data.auth_expire == 0 then
+                    hours_left = "permanent"
+                else
+                    local sisaDetik = status.data.auth_expire - os.time()
+                    if sisaDetik > 0 then
+                        local sisaHari = math.floor(sisaDetik / 86400)
+                        local sisaJam  = math.floor((sisaDetik % 86400) / 3600)
+                        hours_left = sisaHari .. " hari " .. sisaJam .. " jam"
+                    else
+                        -- expired → hapus file otomatis
+                        if isfile and delfile then
+                            pcall(function()
+                                if isfile(keyFileName) then delfile(keyFileName) end
+                                if isfile(versionFileName) then delfile(versionFileName) end
+                            end)
+                        end
+                        getgenv().script_key = nil
+                        getgenv().HoN_Version = nil
+                        Description.Text = "Key expired & file dihapus!"
+                        Description.TextColor3 = Color3.fromRGB(255, 100, 100)
+                        SubmitBtnText.Text = "Verify Key"
+                        isVerifying = false
+                        return
+                    end
+                end
+
+                Description.Text = "Key valid! (" .. hours_left .. " tersisa)"
+                Description.TextColor3 = Color3.fromRGB(100, 255, 150)
+
+                -- simpan key & version
+                getgenv().script_key = key
+                getgenv().HoN_Version = targetVersion
+                pcall(function() _G.script_key = key end)
+
                 if writefile then
-                    pcall(function() 
-                        writefile(keyFileName, key) 
+                    pcall(function()
+                        writefile(keyFileName, key)
                         writefile(versionFileName, targetVersion)
                     end)
                 end
-                
-                KeySystemUI:Destroy()
-            else
-                getgenv().script_key = nil
-                getgenv().HoN_Version = nil
-                pcall(function() _G.script_key = nil end)
-        
-                Description.Text = "Failed to load script game! Try again."
-                Description.TextColor3 = Color3.fromRGB(255, 100, 100)
-                SubmitBtnText.Text = "Verify Key"
-                isVerifying = false
-            end
-        else
-            getgenv().script_key = nil
-            getgenv().HoN_Version = nil
-            pcall(function() _G.script_key = nil end)
-            
-            -- HAPUS FILE HANYA UNTUK EXPIRED DAN INCORRECT
-            if (result.code == "KEY_EXPIRED" or result.code == "KEY_INCORRECT") then
+
+                local isScriptLoaded = loadScript(targetVersion)
+                if isScriptLoaded then
+                    KeySystemUI:Destroy()
+                else
+                    Description.Text = "Failed to load script game!"
+                    Description.TextColor3 = Color3.fromRGB(255, 100, 100)
+                    SubmitBtnText.Text = "Verify Key"
+                    isVerifying = false
+                end
+
+            elseif status.code == "KEY_EXPIRED" then
+                -- expired → hapus file otomatis
                 if isfile and delfile then
                     pcall(function()
                         if isfile(keyFileName) then delfile(keyFileName) end
                         if isfile(versionFileName) then delfile(versionFileName) end
                     end)
                 end
+                getgenv().script_key = nil
+                getgenv().HoN_Version = nil
+                Description.Text = "Key expired & file dihapus!"
+                Description.TextColor3 = Color3.fromRGB(255, 100, 100)
+                SubmitBtnText.Text = "Verify Key"
+                isVerifying = false
+
+            else
+                Description.Text = "Key status: " .. status.code
+                Description.TextColor3 = Color3.fromRGB(255, 100, 100)
+                SubmitBtnText.Text = "Verify Key"
+                isVerifying = false
             end
-        
-            local statusMessages = {
-                KEY_HWID_LOCKED = "Key locked to another HWID",
-                KEY_INCORRECT   = "Invalid key for " .. targetVersion:upper() .. " version",
-                KEY_EXPIRED     = "Key expired, please get a new key",
-                KEY_BANNED      = "Key banned"
-            }
-            
-            Description.Text = statusMessages[result.code] or "Verification failed"
+        else
+            Description.Text = "Key invalid atau gagal cek."
             Description.TextColor3 = Color3.fromRGB(255, 100, 100)
             SubmitBtnText.Text = "Verify Key"
-            
-            KeyInput.Text = ""
             isVerifying = false
         end
     end)
 end
+
 
 CloseBtn.MouseButton1Click:Connect(function() KeySystemUI:Destroy() end)
 SubmitBtn.MouseButton1Click:Connect(VerifyKey)
