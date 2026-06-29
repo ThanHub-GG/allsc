@@ -1,3 +1,7 @@
+-- ============================================================
+--  ThanHub Key System v2 | Redesigned UI + Strong ProtectGUI
+-- ============================================================
+
 local GAME_CONFIGS = {
     [89469502395769] = {
         name = "Kick A Lucky Block",
@@ -30,26 +34,35 @@ local GAME_CONFIGS = {
 }
 
 local Config = {
-    DiscordLink = "https://discord.gg/thanhub",
-    LogoAssetId = "rbxassetid://85779221265543",
-    Title = "ThanHub Key System",
-    Description = "Select your key version, enter key, and verify.",
-    GetKeyButtons = {
-        {Name = "Discord Link", Link = "https://discord.gg/cjqFSvX27J", Icon = ""},
-    }
+    DiscordLink  = "https://discord.gg/thanhub",
+    LogoAssetId  = "rbxassetid://85779221265543",
+    Title        = "ThanHub",
+    Subtitle     = "Key System",
+    Description  = "Pilih versi key, masukkan key, lalu verifikasi.",
+    GetKeyLink   = "https://discord.gg/cjqFSvX27J",
 }
 
+-- ============================================================
+--  Services & Init
+-- ============================================================
+local TweenService        = game:GetService("TweenService")
+local UserInputService    = game:GetService("UserInputService")
+local MarketplaceService  = game:GetService("MarketplaceService")
+local CoreGui             = game:GetService("CoreGui")
+local Lighting            = game:GetService("Lighting")
+local StarterGui          = game:GetService("StarterGui")
+local Debris              = game:GetService("Debris")
+
 local currentPlaceId = game.PlaceId
-local MarketplaceService = game:GetService("MarketplaceService")
-local creatorId = MarketplaceService:GetProductInfo(game.PlaceId).Creator.CreatorTargetId
-local currentGameId = game.GameId
-local gameConfig = GAME_CONFIGS[currentGameId] or GAME_CONFIGS[currentPlaceId] or GAME_CONFIGS[creatorId]
+local currentGameId  = game.GameId
+local creatorId      = MarketplaceService:GetProductInfo(currentPlaceId).Creator.CreatorTargetId
+local gameConfig     = GAME_CONFIGS[currentGameId] or GAME_CONFIGS[currentPlaceId] or GAME_CONFIGS[creatorId]
 
 if not gameConfig then
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Unsupported Game";
-        Text = "PlaceId: " .. currentPlaceId .. " not supported.";
-        Icon = "rbxassetid://85779221265543";
+    StarterGui:SetCore("SendNotification", {
+        Title    = "Unsupported Game";
+        Text     = "PlaceId: " .. currentPlaceId .. " not supported.";
+        Icon     = Config.LogoAssetId;
         Duration = 10;
     })
     return
@@ -58,456 +71,729 @@ end
 local success, api = pcall(function()
     return loadstring(game:HttpGet("https://sdk.luaegis.net/sdk/library.lua"))()
 end)
-
 if not success then return end
 
-local selectedVersionUI = "normal" 
+-- ============================================================
+--  Key helpers
+-- ============================================================
+local keyFileName = "thananjay1_key.txt"
+local verFileName = "thananjay1_ver.txt"
 
 local function loadScript(version)
     local scriptId = gameConfig.script_ids[version]
     if not scriptId then return false end
-
-    warn("LOADING VERSION:", version:upper())
     api.script_id = scriptId
-
     local currentKey = getgenv().script_key or _G.script_key
     if currentKey then
         pcall(function() script_key = currentKey end)
         pcall(function() _G.script_key = currentKey end)
     end
-
-    local ok, err = pcall(function()
-        api.load_script()
-    end)
+    local ok = pcall(function() api.load_script() end)
     return ok
 end
 
 local function checkKeyDirect(key, version)
-    if not key or key == "" then return false, {code = "KEY_INCORRECT", message = "Empty key"} end
-    
+    if not key or key == "" then return false, {code="KEY_INCORRECT"} end
     local scriptId = gameConfig.script_ids[version]
-    if not scriptId then return false, {code = "INVALID_VERSION", message = "No script ID"} end
-    
+    if not scriptId then return false, {code="INVALID_VERSION"} end
     api.script_id = scriptId
-    
-    local ok, result = pcall(function()
-        api.check_key(key)
-    end)
-
+    local ok, result = pcall(function() api.check_key(key) end)
     if ok then
         return true, "KEY_VALID"
     else
-        local errMsg = tostring(result or "KEY_INCORRECT"):upper()
-        local finalCode = "KEY_INCORRECT"
-        if string.find(errMsg, "HWID") then finalCode = "KEY_HWID_LOCKED"
-        elseif string.find(errMsg, "EXPIRE") then finalCode = "KEY_EXPIRED"
-        elseif string.find(errMsg, "BAN") then finalCode = "KEY_BANNED" end
-        return false, {code = finalCode, message = result}
+        local e = tostring(result or ""):upper()
+        local code = "KEY_INCORRECT"
+        if e:find("HWID") then code = "KEY_HWID_LOCKED"
+        elseif e:find("EXPIRE") then code = "KEY_EXPIRED"
+        elseif e:find("BAN") then code = "KEY_BANNED" end
+        return false, {code=code, message=result}
     end
 end
 
-local keyFileName = "thananjay1_key.txt"
-local versionFileName = "thananjay1_ver.txt"
-
-local function checkSavedKey()
-    local savedKey = nil
-    local savedVer = "normal"
-
-    if isfile and readfile then
+local function deleteSavedFiles()
+    if isfile and delfile then
         pcall(function()
-            if isfile(keyFileName) and isfile(versionFileName) then
-                local contentKey = readfile(keyFileName)
-                local contentVer = readfile(versionFileName)
-                if contentKey and contentKey ~= "" then savedKey = contentKey:gsub("%s+", "") end
-                if contentVer and contentVer ~= "" then savedVer = contentVer:gsub("%s+", ""):lower() end
-            end
+            if isfile(keyFileName) then delfile(keyFileName) end
+            if isfile(verFileName)  then delfile(verFileName)  end
         end)
     end
+end
 
+local function checkSavedKey()
+    if not (isfile and readfile) then return false end
+    local savedKey, savedVer = nil, "normal"
+    pcall(function()
+        if isfile(keyFileName) and isfile(verFileName) then
+            local k = readfile(keyFileName)
+            local v = readfile(verFileName)
+            if k and k ~= "" then savedKey = k:gsub("%s+","") end
+            if v and v ~= "" then savedVer = v:gsub("%s+",""):lower() end
+        end
+    end)
     if not savedKey or savedKey == "" then return false end
-
-    local valid, result = checkKeyDirect(savedKey, savedVer)
+    local valid = checkKeyDirect(savedKey, savedVer)
     if valid then
-        getgenv().script_key = savedKey
-        getgenv().HoN_Version = savedVer
-        
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Key Auto-Logged!";
-            Text = gameConfig.name .. " | " .. savedVer:upper();
-            Icon = "rbxassetid://85779221265543";
+        getgenv().script_key   = savedKey
+        getgenv().HoN_Version  = savedVer
+        StarterGui:SetCore("SendNotification", {
+            Title    = "Auto-Login!";
+            Text     = gameConfig.name .. " | " .. savedVer:upper();
+            Icon     = Config.LogoAssetId;
             Duration = 3;
         })
         loadScript(savedVer)
         return true
     else
-        if isfile and delfile then
-            pcall(function()
-                if isfile(keyFileName) then delfile(keyFileName) end
-                if isfile(versionFileName) then delfile(versionFileName) end
-            end)
-        end
+        deleteSavedFiles()
     end
     return false
 end
 
 if checkSavedKey() then return end
 
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
+-- ============================================================
+--  PROTECT GUI  (versi kuat: metatable + loop + ancestry)
+-- ============================================================
+local function protectGUI(gui)
+    -- Pastikan parent benar saat ancestry berubah
+    gui.AncestryChanged:Connect(function(_, parent)
+        if parent ~= CoreGui then
+            task.defer(function()
+                pcall(function() gui.Parent = CoreGui end)
+            end)
+        end
+    end)
+
+    -- Cegah child penting terhapus (frame utama)
+    gui.DescendantRemoving:Connect(function(desc)
+        -- Jika yang dihapus adalah ScreenGui itu sendiri, kembalikan
+        if desc == gui then
+            task.defer(function()
+                pcall(function() gui.Parent = CoreGui end)
+            end)
+        end
+    end)
+
+    -- Loop pengaman setiap 1 detik
+    task.spawn(function()
+        while true do
+            task.wait(1)
+            -- Cek apakah GUI masih ada dan parent-nya benar
+            local ok = pcall(function()
+                if gui.Parent ~= CoreGui then
+                    gui.Parent = CoreGui
+                end
+            end)
+            -- Jika GUI sudah benar-benar hancur (pcall gagal), berhenti
+            if not ok then break end
+        end
+    end)
+
+    -- Proteksi tambahan via __newindex metatable pada instance
+    -- (memblokir upaya mengubah .Parent dari luar lewat script lain)
+    pcall(function()
+        local mt = {
+            __newindex = function(_, key, value)
+                if key == "Parent" and value ~= CoreGui then
+                    -- abaikan / paksa kembali ke CoreGui
+                    task.defer(function()
+                        pcall(function() gui.Parent = CoreGui end)
+                    end)
+                    return
+                end
+                rawset(_, key, value)
+            end
+        }
+        -- Hanya executor tertentu yang mendukung setrawmetatable
+        if setrawmetatable then
+            setrawmetatable(gui, mt)
+        end
+    end)
+end
+
+-- ============================================================
+--  BLUR BACKGROUND
+-- ============================================================
+local blur = Instance.new("BlurEffect")
+blur.Size = 16
+blur.Name = "ThanHubBlur"
+blur.Parent = Lighting
+
+-- ============================================================
+--  WARNA & KONSTANTA DESAIN
+-- ============================================================
+local C = {
+    BG          = Color3.fromRGB(12, 12, 18),
+    PANEL       = Color3.fromRGB(18, 18, 28),
+    CARD        = Color3.fromRGB(24, 24, 38),
+    ACCENT1     = Color3.fromRGB(139, 92, 246),   -- ungu utama
+    ACCENT2     = Color3.fromRGB(59, 130, 246),   -- biru
+    ACCENT_GOLD = Color3.fromRGB(251, 191, 36),   -- emas premium
+    TEXT        = Color3.fromRGB(240, 240, 255),
+    TEXT_MUTED  = Color3.fromRGB(120, 120, 160),
+    SUCCESS     = Color3.fromRGB(52, 211, 153),
+    ERROR       = Color3.fromRGB(248, 113, 113),
+    WARN        = Color3.fromRGB(251, 191, 36),
+    BORDER      = Color3.fromRGB(60, 60, 90),
+}
+
+local function tw(obj, t, props)
+    return TweenService:Create(obj, TweenInfo.new(t, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), props)
+end
+
+local function corner(parent, radius)
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, radius or 8)
+    c.Parent = parent
+    return c
+end
+
+local function stroke(parent, color, thickness, transparency)
+    local s = Instance.new("UIStroke")
+    s.Color = color or C.BORDER
+    s.Thickness = thickness or 1
+    s.Transparency = transparency or 0
+    s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    s.Parent = parent
+    return s
+end
+
+local function gradient(parent, c0, c1, rotation)
+    local g = Instance.new("UIGradient")
+    g.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, c0),
+        ColorSequenceKeypoint.new(1, c1),
+    }
+    g.Rotation = rotation or 90
+    g.Parent = parent
+    return g
+end
+
+local function label(parent, text, size, color, weight, xAlign)
+    local l = Instance.new("TextLabel")
+    l.Text = text
+    l.TextSize = size or 13
+    l.TextColor3 = color or C.TEXT
+    l.FontFace = Font.new("rbxassetid://12187365364", weight or Enum.FontWeight.Regular)
+    l.BackgroundTransparency = 1
+    l.TextXAlignment = xAlign or Enum.TextXAlignment.Left
+    l.Parent = parent
+    return l
+end
+
+-- ============================================================
+--  SCREEN GUI
+-- ============================================================
 local KeySystemUI = Instance.new("ScreenGui")
+KeySystemUI.Name = "ThanHubKeySystem"
 KeySystemUI.ScreenInsets = Enum.ScreenInsets.None
 KeySystemUI.ResetOnSpawn = false
 KeySystemUI.DisplayOrder = 2147483647
-KeySystemUI.Parent = game:GetService("CoreGui")
+KeySystemUI.Parent = CoreGui
+
+protectGUI(KeySystemUI)
+
+-- ============================================================
+--  WINDOW UTAMA
+-- ============================================================
+local W, H = 440, 420
 
 local Base = Instance.new("Frame")
+Base.Name = "Base"
 Base.AnchorPoint = Vector2.new(0.5, 0.5)
-Base.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-Base.BackgroundTransparency = 0.1
 Base.Position = UDim2.fromScale(0.5, 0.5)
-Base.Size = UDim2.fromOffset(420, 390)
+Base.Size = UDim2.fromOffset(0, 0)   -- mulai dari 0 untuk animasi open
+Base.BackgroundColor3 = C.BG
+Base.ClipsDescendants = true
 Base.Parent = KeySystemUI
+corner(Base, 14)
+stroke(Base, C.ACCENT1, 1.5, 0.6)
 
-local BaseUICorner = Instance.new("UICorner")
-BaseUICorner.CornerRadius = UDim.new(0, 10)
-BaseUICorner.Parent = Base
+-- Gradient latar
+local bgGrad = Instance.new("Frame")
+bgGrad.Size = UDim2.fromScale(1, 1)
+bgGrad.BackgroundColor3 = C.PANEL
+bgGrad.BackgroundTransparency = 0.5
+bgGrad.Parent = Base
+corner(bgGrad, 14)
+gradient(bgGrad, Color3.fromRGB(25, 15, 50), Color3.fromRGB(10, 10, 20), 135)
 
-local BaseUIStroke = Instance.new("UIStroke")
-BaseUIStroke.Color = Color3.fromRGB(255, 255, 255)
-BaseUIStroke.Transparency = 0.9
-BaseUIStroke.Parent = Base
-
--- Topbar
+-- ============================================================
+--  TOPBAR
+-- ============================================================
 local Topbar = Instance.new("Frame")
-Topbar.BackgroundTransparency = 1
-Topbar.Size = UDim2.new(1, 0, 0, 50)
+Topbar.Name = "Topbar"
+Topbar.Size = UDim2.new(1, 0, 0, 56)
+Topbar.BackgroundColor3 = C.CARD
+Topbar.BackgroundTransparency = 0.3
+Topbar.ZIndex = 5
 Topbar.Parent = Base
+corner(Topbar, 14)   -- hanya atas yang rounded; bawah ikut clip
 
+-- Garis bawah topbar
+local topDivider = Instance.new("Frame")
+topDivider.Size = UDim2.new(1, 0, 0, 1)
+topDivider.Position = UDim2.new(0, 0, 1, -1)
+topDivider.BackgroundColor3 = C.ACCENT1
+topDivider.BackgroundTransparency = 0.7
+topDivider.ZIndex = 6
+topDivider.Parent = Topbar
+
+-- Logo
 local Logo = Instance.new("ImageLabel")
 Logo.Image = Config.LogoAssetId
 Logo.BackgroundTransparency = 1
-Logo.Position = UDim2.fromOffset(15, 9)
+Logo.Position = UDim2.fromOffset(16, 12)
 Logo.Size = UDim2.fromOffset(32, 32)
+Logo.ZIndex = 6
 Logo.Parent = Topbar
 
-local Title = Instance.new("TextLabel")
-Title.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold)
-Title.Text = Config.Title
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 16
-Title.BackgroundTransparency = 1
-Title.Position = UDim2.fromOffset(55, 15)
-Title.Size = UDim2.new(1, -100, 0, 20)
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = Topbar
+-- Title block
+local TitleMain = label(Topbar, Config.Title, 17, C.TEXT, Enum.FontWeight.Bold)
+TitleMain.Position = UDim2.fromOffset(58, 10)
+TitleMain.Size = UDim2.new(1, -120, 0, 20)
+TitleMain.ZIndex = 6
 
+local TitleSub = label(Topbar, Config.Subtitle, 11, C.TEXT_MUTED, Enum.FontWeight.Regular)
+TitleSub.Position = UDim2.fromOffset(58, 30)
+TitleSub.Size = UDim2.new(1, -120, 0, 14)
+TitleSub.ZIndex = 6
+
+-- Badge game name
+local GameBadge = Instance.new("Frame")
+GameBadge.Size = UDim2.fromOffset(0, 20)   -- auto-width via UISizeConstraint
+GameBadge.Position = UDim2.new(1, -160, 0, 18)
+GameBadge.BackgroundColor3 = C.ACCENT1
+GameBadge.BackgroundTransparency = 0.7
+GameBadge.ZIndex = 6
+GameBadge.Parent = Topbar
+corner(GameBadge, 10)
+local gameBadgeLabel = label(GameBadge, "  " .. gameConfig.name .. "  ", 10, C.TEXT, Enum.FontWeight.SemiBold, Enum.TextXAlignment.Center)
+gameBadgeLabel.Size = UDim2.fromScale(1, 1)
+gameBadgeLabel.ZIndex = 7
+-- Auto-size badge
+local sc = Instance.new("UISizeConstraint")
+sc.MinSize = Vector2.new(60, 20)
+sc.Parent = GameBadge
+local ats = Instance.new("UITextSizeConstraint")
+ats.MaxTextSize = 10
+ats.Parent = gameBadgeLabel
+-- Lebar badge mengikuti teks
+game:GetService("RunService").RenderStepped:Wait()
+GameBadge.Size = UDim2.fromOffset(math.max(60, gameBadgeLabel.TextBounds.X + 14), 20)
+
+-- Close Button
 local CloseBtn = Instance.new("TextButton")
-CloseBtn.Text = "X"
+CloseBtn.Text = "✕"
 CloseBtn.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Bold)
-CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.TextSize = 16
-CloseBtn.BackgroundTransparency = 1
-CloseBtn.Position = UDim2.new(1, -35, 0, 15)
-CloseBtn.Size = UDim2.fromOffset(20, 20)
+CloseBtn.TextColor3 = C.TEXT_MUTED
+CloseBtn.TextSize = 14
+CloseBtn.BackgroundColor3 = Color3.fromRGB(239, 68, 68)
+CloseBtn.BackgroundTransparency = 0.8
+CloseBtn.Position = UDim2.new(1, -40, 0, 14)
+CloseBtn.Size = UDim2.fromOffset(26, 26)
+CloseBtn.ZIndex = 7
 CloseBtn.Parent = Topbar
+corner(CloseBtn, 6)
 
-local Content = Instance.new("Frame")
+CloseBtn.MouseEnter:Connect(function()
+    tw(CloseBtn, 0.2, {BackgroundTransparency = 0.3, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+end)
+CloseBtn.MouseLeave:Connect(function()
+    tw(CloseBtn, 0.2, {BackgroundTransparency = 0.8, TextColor3 = C.TEXT_MUTED}):Play()
+end)
+
+-- ============================================================
+--  CONTENT AREA
+-- ============================================================
+local Content = Instance.new("ScrollingFrame")
+Content.Name = "Content"
+Content.Position = UDim2.fromOffset(0, 56)
+Content.Size = UDim2.new(1, 0, 1, -56)
 Content.BackgroundTransparency = 1
-Content.Position = UDim2.fromOffset(0, 50)
-Content.Size = UDim2.new(1, 0, 1, -50)
+Content.ScrollBarThickness = 0
+Content.CanvasSize = UDim2.new(0, 0, 0, 0)
+Content.AutomaticCanvasSize = Enum.AutomaticSize.Y
 Content.Parent = Base
 
-local ContentPadding = Instance.new("UIPadding")
-ContentPadding.PaddingLeft = UDim.new(0, 25)
-ContentPadding.PaddingRight = UDim.new(0, 25)
-ContentPadding.Parent = Content
+local ContentPad = Instance.new("UIPadding")
+ContentPad.PaddingLeft  = UDim.new(0, 20)
+ContentPad.PaddingRight = UDim.new(0, 20)
+ContentPad.PaddingTop   = UDim.new(0, 16)
+ContentPad.PaddingBottom= UDim.new(0, 16)
+ContentPad.Parent = Content
 
 local ContentList = Instance.new("UIListLayout")
-ContentList.Padding = UDim.new(0, 10)
+ContentList.Padding = UDim.new(0, 12)
 ContentList.SortOrder = Enum.SortOrder.LayoutOrder
 ContentList.Parent = Content
 
-local GameInfo = Instance.new("TextLabel")
-GameInfo.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium)
-GameInfo.Text = "Game: " .. gameConfig.name
-GameInfo.TextColor3 = Color3.fromRGB(168, 85, 247)
-GameInfo.TextSize = 12
-GameInfo.BackgroundTransparency = 1
-GameInfo.Size = UDim2.new(1, 0, 0, 16)
-GameInfo.Parent = Content
+-- ============================================================
+--  TAB SELECTOR  (Normal / Premium)
+-- ============================================================
+local selectedVersionUI = "normal"
 
--- =========================================================================
--- FITUR BARU: TAB SELECTOR VERSION (NORMAL / PREMIUM)
--- =========================================================================
 local TabContainer = Instance.new("Frame")
-TabContainer.BackgroundTransparency = 0.95
-TabContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-TabContainer.Size = UDim2.new(1, 0, 0, 35)
+TabContainer.Name = "TabContainer"
+TabContainer.Size = UDim2.new(1, 0, 0, 40)
+TabContainer.BackgroundColor3 = C.CARD
+TabContainer.LayoutOrder = 1
 TabContainer.Parent = Content
+corner(TabContainer, 10)
+stroke(TabContainer, C.BORDER, 1, 0.3)
 
-local TabCorner = Instance.new("UICorner")
-TabCorner.CornerRadius = UDim.new(0, 6)
-TabCorner.Parent = TabContainer
+local TabPad = Instance.new("UIPadding")
+TabPad.PaddingLeft  = UDim.new(0, 4)
+TabPad.PaddingRight = UDim.new(0, 4)
+TabPad.PaddingTop   = UDim.new(0, 4)
+TabPad.PaddingBottom= UDim.new(0, 4)
+TabPad.Parent = TabContainer
 
-local NormalTab = Instance.new("TextButton")
-NormalTab.Text = "Normal / Free Key"
-NormalTab.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold)
-NormalTab.TextSize = 12
-NormalTab.TextColor3 = Color3.fromRGB(255, 255, 255)
-NormalTab.Size = UDim2.new(0.5, 0, 1, 0)
-NormalTab.BackgroundColor3 = Color3.fromRGB(168, 85, 247)
-NormalTab.BackgroundTransparency = 0.3
-NormalTab.Parent = TabContainer
+local TabLayout = Instance.new("UIListLayout")
+TabLayout.FillDirection = Enum.FillDirection.Horizontal
+TabLayout.Padding = UDim.new(0, 4)
+TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+TabLayout.Parent = TabContainer
 
-local NormalCorner = Instance.new("UICorner")
-NormalCorner.CornerRadius = UDim.new(0, 6)
-NormalCorner.Parent = NormalTab
+local function makeTab(text, layoutOrder)
+    local btn = Instance.new("TextButton")
+    btn.Text = text
+    btn.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold)
+    btn.TextSize = 12
+    btn.TextColor3 = C.TEXT_MUTED
+    btn.Size = UDim2.new(0.5, -2, 1, 0)
+    btn.BackgroundColor3 = C.PANEL
+    btn.BackgroundTransparency = 1
+    btn.LayoutOrder = layoutOrder
+    btn.Parent = TabContainer
+    corner(btn, 7)
+    return btn
+end
 
-local PremiumTab = Instance.new("TextButton")
-PremiumTab.Text = "⚡ Premium Key"
-PremiumTab.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold)
-PremiumTab.TextSize = 12
-PremiumTab.TextColor3 = Color3.fromRGB(150, 150, 150)
-PremiumTab.Size = UDim2.new(0.5, 0, 1, 0)
-PremiumTab.Position = UDim2.fromScale(0.5, 0)
-PremiumTab.BackgroundTransparency = 1
-PremiumTab.Parent = TabContainer
+local NormalTab  = makeTab("🔑  Normal / Free", 1)
+local PremiumTab = makeTab("⚡  Premium", 2)
 
-local PremiumCorner = Instance.new("UICorner")
-PremiumCorner.CornerRadius = UDim.new(0, 6)
-PremiumCorner.Parent = PremiumTab
+-- Indikator aktif
+local function setTab(version)
+    selectedVersionUI = version
+    if version == "normal" then
+        tw(NormalTab,  0.2, {BackgroundTransparency = 0, TextColor3 = C.TEXT}):Play()
+        NormalTab.BackgroundColor3 = C.ACCENT1
+        tw(PremiumTab, 0.2, {BackgroundTransparency = 1, TextColor3 = C.TEXT_MUTED}):Play()
+    else
+        tw(PremiumTab, 0.2, {BackgroundTransparency = 0, TextColor3 = C.TEXT}):Play()
+        PremiumTab.BackgroundColor3 = C.ACCENT_GOLD
+        tw(NormalTab,  0.2, {BackgroundTransparency = 1, TextColor3 = C.TEXT_MUTED}):Play()
+    end
+end
+setTab("normal")
+NormalTab.MouseButton1Click:Connect(function()  setTab("normal")  end)
+PremiumTab.MouseButton1Click:Connect(function() setTab("premium") end)
 
-NormalTab.MouseButton1Click:Connect(function()
-    selectedVersionUI = "normal"
-    TweenService:Create(NormalTab, TweenInfo.new(0.2), {BackgroundTransparency = 0.3, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-    NormalTab.BackgroundColor3 = Color3.fromRGB(168, 85, 247)
-    TweenService:Create(PremiumTab, TweenInfo.new(0.2), {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(150, 150, 150)}):Play()
-end)
+-- ============================================================
+--  KEY INPUT CARD
+-- ============================================================
+local InputCard = Instance.new("Frame")
+InputCard.Name = "InputCard"
+InputCard.Size = UDim2.new(1, 0, 0, 100)
+InputCard.BackgroundColor3 = C.CARD
+InputCard.LayoutOrder = 2
+InputCard.Parent = Content
+corner(InputCard, 10)
+stroke(InputCard, C.BORDER, 1, 0.4)
 
-PremiumTab.MouseButton1Click:Connect(function()
-    selectedVersionUI = "premium"
-    TweenService:Create(PremiumTab, TweenInfo.new(0.2), {BackgroundTransparency = 0.3, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-    PremiumTab.BackgroundColor3 = Color3.fromRGB(124, 58, 237)
-    TweenService:Create(NormalTab, TweenInfo.new(0.2), {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(150, 150, 150)}):Play()
-end)
--- =========================================================================
+local InputCardPad = Instance.new("UIPadding")
+InputCardPad.PaddingLeft   = UDim.new(0, 14)
+InputCardPad.PaddingRight  = UDim.new(0, 14)
+InputCardPad.PaddingTop    = UDim.new(0, 12)
+InputCardPad.PaddingBottom = UDim.new(0, 12)
+InputCardPad.Parent = InputCard
 
-local Description = Instance.new("TextLabel")
-Description.Text = Config.Description
-Description.FontFace = Font.new("rbxassetid://12187365364")
-Description.TextColor3 = Color3.fromRGB(255, 255, 255)
-Description.TextSize = 12
-Description.TextTransparency = 0.5
-Description.BackgroundTransparency = 1
-Description.Size = UDim2.new(1, 0, 0, 16)
-Description.Parent = Content
+local InputCardList = Instance.new("UIListLayout")
+InputCardList.Padding = UDim.new(0, 8)
+InputCardList.SortOrder = Enum.SortOrder.LayoutOrder
+InputCardList.Parent = InputCard
+
+local inputHint = label(InputCard, "Masukkan Key Kamu", 11, C.TEXT_MUTED, Enum.FontWeight.Medium)
+inputHint.Size = UDim2.new(1, 0, 0, 14)
+inputHint.LayoutOrder = 1
 
 local KeyInput = Instance.new("TextBox")
-KeyInput.PlaceholderText = "Paste your key here..."
+KeyInput.PlaceholderText = "Paste key di sini..."
 KeyInput.Text = ""
 KeyInput.FontFace = Font.new("rbxassetid://12187365364")
-KeyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+KeyInput.TextColor3 = C.TEXT
+KeyInput.PlaceholderColor3 = C.TEXT_MUTED
 KeyInput.TextSize = 13
-KeyInput.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-KeyInput.BackgroundTransparency = 0.95
-KeyInput.Size = UDim2.new(1, 0, 0, 38)
+KeyInput.BackgroundColor3 = C.PANEL
+KeyInput.Size = UDim2.new(1, 0, 0, 36)
 KeyInput.ClearTextOnFocus = false
-KeyInput.Parent = Content
+KeyInput.LayoutOrder = 2
+KeyInput.Parent = InputCard
+corner(KeyInput, 7)
+stroke(KeyInput, C.BORDER, 1, 0.2)
 
-local KeyInputCorner = Instance.new("UICorner")
-KeyInputCorner.CornerRadius = UDim.new(0, 6)
-KeyInputCorner.Parent = KeyInput
+local KIPad = Instance.new("UIPadding")
+KIPad.PaddingLeft = UDim.new(0, 12)
+KIPad.PaddingRight = UDim.new(0, 12)
+KIPad.Parent = KeyInput
 
-local KeyInputPadding = Instance.new("UIPadding")
-KeyInputPadding.PaddingLeft = UDim.new(0, 12)
-KeyInputPadding.Parent = KeyInput
+KeyInput.Focused:Connect(function()
+    tw(KeyInput, 0.2, {BackgroundColor3 = Color3.fromRGB(30, 30, 50)}):Play()
+    local s = KeyInput:FindFirstChildOfClass("UIStroke")
+    if s then tw(s, 0.2, {Color = C.ACCENT1, Transparency = 0}):Play() end
+end)
+KeyInput.FocusLost:Connect(function()
+    tw(KeyInput, 0.2, {BackgroundColor3 = C.PANEL}):Play()
+    local s = KeyInput:FindFirstChildOfClass("UIStroke")
+    if s then tw(s, 0.2, {Color = C.BORDER, Transparency = 0.2}):Play() end
+end)
 
+-- ============================================================
+--  STATUS LABEL
+-- ============================================================
+local StatusLabel = label(Content, Config.Description, 12, C.TEXT_MUTED, Enum.FontWeight.Regular, Enum.TextXAlignment.Center)
+StatusLabel.Size = UDim2.new(1, 0, 0, 16)
+StatusLabel.LayoutOrder = 3
+StatusLabel.Parent = Content
+
+-- ============================================================
+--  VERIFY BUTTON
+-- ============================================================
 local SubmitBtn = Instance.new("TextButton")
 SubmitBtn.Text = ""
-SubmitBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-SubmitBtn.BackgroundTransparency = 0.95
-SubmitBtn.Size = UDim2.new(1, 0, 0, 38)
+SubmitBtn.Size = UDim2.new(1, 0, 0, 42)
+SubmitBtn.BackgroundColor3 = C.ACCENT1
+SubmitBtn.LayoutOrder = 4
 SubmitBtn.Parent = Content
+corner(SubmitBtn, 10)
 
-local SubmitBtnCorner = Instance.new("UICorner")
-SubmitBtnCorner.CornerRadius = UDim.new(0, 6)
-SubmitBtnCorner.Parent = SubmitBtn
+gradient(SubmitBtn, C.ACCENT1, C.ACCENT2, 90)
 
-local SubmitBtnText = Instance.new("TextLabel")
-SubmitBtnText.Text = "Verify Key"
-SubmitBtnText.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium)
-SubmitBtnText.TextColor3 = Color3.fromRGB(255, 255, 255)
-SubmitBtnText.TextSize = 13
-SubmitBtnText.BackgroundTransparency = 1
-SubmitBtnText.Size = UDim2.new(1, 0, 1, 0)
-SubmitBtnText.Parent = SubmitBtn
+local SubmitLabel = label(SubmitBtn, "  Verify Key", 14, C.TEXT, Enum.FontWeight.Bold, Enum.TextXAlignment.Center)
+SubmitLabel.Size = UDim2.fromScale(1, 1)
+SubmitLabel.ZIndex = 2
 
-local SubmitBtnGradient = Instance.new("UIGradient")
-SubmitBtnGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(168, 85, 247)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(124, 58, 237))
-}
-SubmitBtnGradient.Parent = SubmitBtnText
+-- Hover efek
+SubmitBtn.MouseEnter:Connect(function()
+    tw(SubmitBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(109, 40, 217)}):Play()
+end)
+SubmitBtn.MouseLeave:Connect(function()
+    tw(SubmitBtn, 0.2, {BackgroundColor3 = C.ACCENT1}):Play()
+end)
 
-local Divider1 = Instance.new("Frame")
-Divider1.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Divider1.BackgroundTransparency = 0.9
-Divider1.Size = UDim2.new(1, 0, 0, 1)
-Divider1.Parent = Content
+-- ============================================================
+--  GET KEY BUTTON
+-- ============================================================
+local GetKeyBtn = Instance.new("TextButton")
+GetKeyBtn.Text = "🔗  Get Your Key Here"
+GetKeyBtn.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold)
+GetKeyBtn.TextColor3 = C.ACCENT1
+GetKeyBtn.TextSize = 12
+GetKeyBtn.Size = UDim2.new(1, 0, 0, 34)
+GetKeyBtn.BackgroundColor3 = C.CARD
+GetKeyBtn.BackgroundTransparency = 0.2
+GetKeyBtn.LayoutOrder = 5
+GetKeyBtn.Parent = Content
+corner(GetKeyBtn, 8)
+stroke(GetKeyBtn, C.ACCENT1, 1, 0.5)
 
--- 1. Membuat Tombol Utama
-local DiscordBtn = Instance.new("TextButton")
-DiscordBtn.Name = "DiscordBtn"
-DiscordBtn.Text = "Get Your Key Here ( Click )"
-DiscordBtn.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold) -- Dibuat agak tebal biar terbaca
-DiscordBtn.TextColor3 = Color3.fromRGB(168, 85, 247) -- Warna ungu neon khas ThanHub
-DiscordBtn.TextSize = 13
-DiscordBtn.Size = UDim2.new(1, 0, 0, 28) -- Ditambah tingginya sedikit dari 20 ke 28 biar tidak terlalu gepeng
-DiscordBtn.Parent = Content
+GetKeyBtn.MouseEnter:Connect(function()
+    tw(GetKeyBtn, 0.2, {TextColor3 = C.TEXT, BackgroundTransparency = 0}):Play()
+end)
+GetKeyBtn.MouseLeave:Connect(function()
+    tw(GetKeyBtn, 0.2, {TextColor3 = C.ACCENT1, BackgroundTransparency = 0.2}):Play()
+end)
+GetKeyBtn.MouseButton1Click:Connect(function()
+    setclipboard(Config.GetKeyLink)
+    GetKeyBtn.Text = "✅  Link Copied! Paste in your Google/Chrome"
+    task.delay(2, function() GetKeyBtn.Text = "🔗	Get Your Key Here" end)
+end)
 
--- 2. Mengatur Background yang Elegan (Gelap Transparan)
-DiscordBtn.BackgroundColor3 = Color3.fromRGB(24, 18, 36) -- Warna ungu gelap pekat (Dark Mode UI)
-DiscordBtn.BackgroundTransparency = 0.2 -- Sedikit transparan agar menyatu dengan background UI utama
+-- ============================================================
+--  FOOTER
+-- ============================================================
+local Footer = label(Content, "© ThanHub 2025  •  discord.gg/thanhub", 10, C.TEXT_MUTED)
+Footer.TextXAlignment = Enum.TextXAlignment.Center
+Footer.Size = UDim2.new(1, 0, 0, 14)
+Footer.LayoutOrder = 6
+Footer.Parent = Content
 
--- 3. Membuat Sudut Tombol Melengkung (Smooth Corner)
-local btnCorner = Instance.new("UICorner")
-btnCorner.CornerRadius = UDim.new(0, 6) -- Membuat sudut melengkung halus sebesar 6 pixel
-btnCorner.Parent = DiscordBtn
+-- ============================================================
+--  RIPPLE EFFECT
+-- ============================================================
+local function addRipple(btn)
+    btn.MouseButton1Click:Connect(function(x, y)
+        local circle = Instance.new("Frame")
+        circle.Size = UDim2.fromOffset(0, 0)
+        circle.Position = UDim2.fromOffset(x - btn.AbsolutePosition.X, y - btn.AbsolutePosition.Y)
+        circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        circle.BackgroundTransparency = 0.7
+        circle.AnchorPoint = Vector2.new(0.5, 0.5)
+        circle.ZIndex = 10
+        circle.Parent = btn
+        corner(circle, 999)
+        local size = math.max(btn.AbsoluteSize.X, btn.AbsoluteSize.Y) * 2.2
+        TweenService:Create(circle, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {Size = UDim2.fromOffset(size, size), BackgroundTransparency = 1}):Play()
+        Debris:AddItem(circle, 0.6)
+    end)
+end
+addRipple(SubmitBtn)
+addRipple(GetKeyBtn)
 
--- 4. Membuat Garis Tepi Neon (Glow Outline)
-local btnStroke = Instance.new("UIStroke")
-btnStroke.Color = Color3.fromRGB(168, 85, 247) -- Menyamakan warna stroke dengan warna teks ungu neon
-btnStroke.Thickness = 1 -- Ketebalan garis tepi
-btnStroke.Transparency = 0.4 -- Dibuat agak samar agar terlihat seperti efek pendaran cahaya (glow)
-btnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-btnStroke.Parent = DiscordBtn
-
+-- ============================================================
+--  VERIFY LOGIC
+-- ============================================================
 local isVerifying = false
+
+local function setStatus(text, color)
+    StatusLabel.Text = text
+    StatusLabel.TextColor3 = color or C.TEXT_MUTED
+end
+
 local function VerifyKey()
     if isVerifying then return end
-
     local key = KeyInput.Text:gsub("%s+", "")
     if key == "" then
-        Description.Text = "Please enter a key!"
-        Description.TextColor3 = Color3.fromRGB(255, 100, 100)
+        setStatus("⚠  Key tidak boleh kosong!", C.ERROR)
         return
     end
 
     isVerifying = true
     local targetVersion = selectedVersionUI
-    Description.Text = "Checking " .. targetVersion:upper() .. " key..."
-    Description.TextColor3 = Color3.fromRGB(255, 200, 100)
-    SubmitBtnText.Text = "Verifying..."
+    setStatus("🔄  Mengecek key " .. targetVersion:upper() .. "...", C.WARN)
+    SubmitLabel.Text = "  Memverifikasi..."
 
     task.spawn(function()
         api.script_id = gameConfig.script_ids[targetVersion]
 
-        local ok, status = pcall(function()
-            return api.check_key(key)
-        end)
+        local ok, status = pcall(function() return api.check_key(key) end)
 
         if ok and status then
             if status.code == "KEY_VALID" then
+                -- Hitung sisa waktu
                 local hours_left
                 if status.data.auth_expire == 0 then
-                    hours_left = "permanent"
+                    hours_left = "Permanent"
                 else
-                    local sisaDetik = status.data.auth_expire - os.time()
-                    if sisaDetik > 0 then
-                        local sisaHari = math.floor(sisaDetik / 86400)
-                        local sisaJam  = math.floor((sisaDetik % 86400) / 3600)
-                        hours_left = sisaHari .. " hari " .. sisaJam .. " jam"
+                    local sisa = status.data.auth_expire - os.time()
+                    if sisa > 0 then
+                        local hari = math.floor(sisa / 86400)
+                        local jam  = math.floor((sisa % 86400) / 3600)
+                        hours_left = hari .. "h " .. jam .. "j"
                     else
-                        -- expired → hapus file otomatis
-                        if isfile and delfile then
-                            pcall(function()
-                                if isfile(keyFileName) then delfile(keyFileName) end
-                                if isfile(versionFileName) then delfile(versionFileName) end
-                            end)
-                        end
-                        getgenv().script_key = nil
+                        deleteSavedFiles()
+                        getgenv().script_key  = nil
                         getgenv().HoN_Version = nil
-                        Description.Text = "Key expired & file dihapus!"
-                        Description.TextColor3 = Color3.fromRGB(255, 100, 100)
-                        SubmitBtnText.Text = "Verify Key"
+                        setStatus("❌  Key sudah expired!", C.ERROR)
+                        SubmitLabel.Text = "  Verify Key"
                         isVerifying = false
                         return
                     end
                 end
 
-                Description.Text = "Key valid! (" .. hours_left .. " tersisa)"
-                Description.TextColor3 = Color3.fromRGB(100, 255, 150)
-
-                -- simpan key & version
-                getgenv().script_key = key
+                setStatus("✅  Key valid! (" .. hours_left .. " tersisa)", C.SUCCESS)
+                getgenv().script_key  = key
                 getgenv().HoN_Version = targetVersion
                 pcall(function() _G.script_key = key end)
 
                 if writefile then
                     pcall(function()
                         writefile(keyFileName, key)
-                        writefile(versionFileName, targetVersion)
+                        writefile(verFileName,  targetVersion)
                     end)
                 end
 
-                local isScriptLoaded = loadScript(targetVersion)
-                if isScriptLoaded then
-                    KeySystemUI:Destroy()
+                task.wait(0.8)
+                local loaded = loadScript(targetVersion)
+                if loaded then
+                    -- Animasi close
+                    tw(Base, 0.35, {Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1}):Play()
+                    task.delay(0.35, function()
+                        pcall(function() blur:Destroy() end)
+                        KeySystemUI:Destroy()
+                    end)
                 else
-                    Description.Text = "Failed to load script game!"
-                    Description.TextColor3 = Color3.fromRGB(255, 100, 100)
-                    SubmitBtnText.Text = "Verify Key"
+                    setStatus("❌  Gagal memuat script!", C.ERROR)
+                    SubmitLabel.Text = "  Verify Key"
                     isVerifying = false
                 end
 
             elseif status.code == "KEY_EXPIRED" then
-                -- expired → hapus file otomatis
-                if isfile and delfile then
-                    pcall(function()
-                        if isfile(keyFileName) then delfile(keyFileName) end
-                        if isfile(versionFileName) then delfile(versionFileName) end
-                    end)
-                end
-                getgenv().script_key = nil
+                deleteSavedFiles()
+                getgenv().script_key  = nil
                 getgenv().HoN_Version = nil
-                Description.Text = "Key expired & file dihapus!"
-                Description.TextColor3 = Color3.fromRGB(255, 100, 100)
-                SubmitBtnText.Text = "Verify Key"
+                setStatus("❌  Key expired & file dihapus!", C.ERROR)
+                SubmitLabel.Text = "  Verify Key"
+                isVerifying = false
+
+            elseif status.code == "KEY_HWID_LOCKED" then
+                setStatus("🔒  Key terkunci di perangkat lain!", C.ERROR)
+                SubmitLabel.Text = "  Verify Key"
+                isVerifying = false
+
+            elseif status.code == "KEY_BANNED" then
+                setStatus("🚫  Key di-banned!", C.ERROR)
+                SubmitLabel.Text = "  Verify Key"
                 isVerifying = false
 
             else
-                Description.Text = "Key status: " .. status.code
-                Description.TextColor3 = Color3.fromRGB(255, 100, 100)
-                SubmitBtnText.Text = "Verify Key"
+                setStatus("❌  Key status: " .. tostring(status.code), C.ERROR)
+                SubmitLabel.Text = "  Verify Key"
                 isVerifying = false
             end
         else
-            Description.Text = "Key invalid atau gagal cek."
-            Description.TextColor3 = Color3.fromRGB(255, 100, 100)
-            SubmitBtnText.Text = "Verify Key"
+            setStatus("❌  Key tidak valid atau gagal cek.", C.ERROR)
+            SubmitLabel.Text = "  Verify Key"
             isVerifying = false
         end
     end)
 end
 
-
-CloseBtn.MouseButton1Click:Connect(function() KeySystemUI:Destroy() end)
 SubmitBtn.MouseButton1Click:Connect(VerifyKey)
 KeyInput.FocusLost:Connect(function(ep) if ep then VerifyKey() end end)
-DiscordBtn.MouseButton1Click:Connect(function() setclipboard(Config.DiscordLink) end)
 
--- Dragging Logik
-local dragging, dragInput, dragStart, startPos
+-- ============================================================
+--  CLOSE BUTTON
+-- ============================================================
+CloseBtn.MouseButton1Click:Connect(function()
+    tw(Base, 0.3, {Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1}):Play()
+    task.delay(0.3, function()
+        pcall(function() blur:Destroy() end)
+        KeySystemUI:Destroy()
+    end)
+end)
+
+-- ============================================================
+--  DRAG (Topbar)
+-- ============================================================
+local dragging, dragInput, dragStart, startPos = false, nil, nil, nil
+
 Topbar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true dragStart = input.Position startPos = Base.Position
-        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
+        dragging  = true
+        dragStart = input.Position
+        startPos  = Base.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
     end
 end)
-Topbar.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end end)
+Topbar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end
+end)
 UserInputService.InputChanged:Connect(function(input)
     if input == dragInput and dragging then
         local delta = input.Position - dragStart
-        Base.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        Base.Position = UDim2.new(
+            startPos.X.Scale, startPos.X.Offset + delta.X,
+            startPos.Y.Scale, startPos.Y.Offset + delta.Y
+        )
     end
 end)
+
+-- ============================================================
+--  ANIMASI OPEN
+-- ============================================================
+tw(Base, 0.45, {Size = UDim2.fromOffset(W, H)}):Play()
